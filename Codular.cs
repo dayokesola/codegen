@@ -74,6 +74,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%Q%", Stringer.QueryString(fields));
             txt = txt.Replace("%F%", Stringer.Queryable(fields));
             txt = txt.Replace("%F1%", Stringer.QueryableView(fields));
+            txt = txt.Replace("%FG%", Stringer.FactorMapper(fields));
             txt = txt.Replace("%DV%", Stringer.DetailView(fields, formats));
             txt = txt.Replace("%C%", Stringer.Properties(fields));
             txt = txt.Replace("%JM%", Stringer.JSModel(fields));

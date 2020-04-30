@@ -165,6 +165,16 @@ namespace nboni.CodeGen
             return txt;
         }
 
+        public static string FactorMapper(Dictionary<string, string> fields)
+        {
+            var txt = "";
+            foreach (var field in fields)
+            {
+                txt += field.Key + " = obj." + field.Key + Environment.NewLine;
+            } 
+            return txt;
+        }
+
         public static string DetailView(Dictionary<string, string> fields, string formats)
         {
             var temp1 = @"      <dt class='col-sm-3'>%K%</dt>
