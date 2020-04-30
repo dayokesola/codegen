@@ -1,0 +1,1075 @@
+ENTITY
+
+        /// <summary>
+        /// BillGroup Class
+        /// </summary>
+        public class BillGroup : BaseEntity<int>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+public string Name { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Code { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Info { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public int SortId { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Icon { get; set; }
+
+        }
+
+-------------------------------------------------
+
+MODEL
+
+        /// <summary>
+        /// BillGroup View Model
+        /// </summary>
+        [TableName("bts_billgroupmodel")]
+        [PrimaryKey("Id")]
+        public class BillGroupModel : BaseModel<int>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+public string Name { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Code { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Info { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public int SortId { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Icon { get; set; }
+
+        }
+
+-------------------------------------------------
+
+FORM
+
+        /// <summary>
+        /// BillGroup Form
+        /// </summary>
+        public class BillGroupForm : BaseForm<int>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+public string Name { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Code { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Info { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public int SortId { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Icon { get; set; }
+
+        }
+
+-------------------------------------------------
+
+AUTOMAPPER CONFIG
+
+            cfg.CreateMap<BillGroup, BillGroupModel>().ReverseMap();
+            cfg.CreateMap<BillGroup, BillGroupForm>().ReverseMap();
+            cfg.CreateMap<BillGroupModel, BillGroupForm>().ReverseMap();
+
+-------------------------------------------------
+
+MODEL FACTORY
+
+        /// <summary>
+        /// BillGroup Factory
+        /// </summary>
+        public class BillGroupFactory : BaseFactory<BillGroup, BillGroupModel, BillGroupForm, int>
+        {
+
+        }
+
+-------------------------------------------------
+
+
+FACTORY SERVICE
+
+        BillGroupFactory BillGroups { get; }
+
+        private BillGroupFactory _billgroup;
+
+        /// <summary>
+        /// BillGroup Factory Module
+        /// </summary>
+        public BillGroupFactory BillGroups { get { if (_billgroup == null) { _billgroup = new BillGroupFactory(); } return _billgroup; } }
+
+-------------------------------------------------
+
+DB CONTEXT
+
+        public DbSet<BillGroup> BillGroups { get; set; }
+ 
+        For<BillGroupModel>().TableName("bts_billgroupmodel");
+
+var txt = @"create view bts_billgroupmodel as select x.* from bts_billgroup x where x.RecordStatus != 3 and x.RecordStatus != 4";
+Sql(txt);
+
+
+
+var txt = @"drop view bts_billgroupmodel";
+Sql(txt);
+
+-------------------------------------------------
+
+ENTITY REPOSITORY
+    /// <summary>
+    /// 
+    /// </summary>
+    public class BillGroupRepository : BaseRepository<BillGroup, BillGroupModel, int>
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        public BillGroupRepository(BootesDbContext context) : base(context)
+        {
+        }
+        /// <summary>
+        /// IQueryable BillGroup Entity Search
+        /// </summary>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="sortId"></param>
+/// <param name="icon"></param>
+/// <returns></returns>
+        public IQueryable<BillGroup> Search(string name = "",string code = "",string info = "",int sortId = 0,string icon = "")
+        {
+            var table = Query();
+            if (!string.IsNullOrEmpty(name))
+            {
+                table = table.Where(x => x.Name == name);
+            }
+if (!string.IsNullOrEmpty(code))
+            {
+                table = table.Where(x => x.Code == code);
+            }
+if (!string.IsNullOrEmpty(info))
+            {
+                table = table.Where(x => x.Info == info);
+            }
+if (sortId > 0)
+            {
+                table = table.Where(x => x.SortId == sortId);
+            }
+if (!string.IsNullOrEmpty(icon))
+            {
+                table = table.Where(x => x.Icon == icon);
+            }
+  
+            return table;
+        }
+
+        /// <summary>
+        /// Paged BillGroup Model Search
+        /// </summary>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="sortId"></param>
+/// <param name="icon"></param>
+/// <param name="page"></param>
+        ///<param name="pageSize"></param>
+        ///<param name="sort"></param>
+        /// <returns></returns>
+        public Page<BillGroupModel> SearchView(string name = "",string code = "",string info = "",int sortId = 0,string icon = "",
+            long page = 1, long pageSize = 10, string sort = "Id")
+        {
+            var sql = "select * from " + Constants.DBPrefix + "billgroupmodel where Id > 0 ";
+            var c = 0;
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                sql += $" and Name = @{c} ";
+                AddParam("name", name);
+                c++;
+            }
+if (!string.IsNullOrEmpty(code))
+            {
+                sql += $" and Code = @{c} ";
+                AddParam("code", code);
+                c++;
+            }
+if (!string.IsNullOrEmpty(info))
+            {
+                sql += $" and Info = @{c} ";
+                AddParam("info", info);
+                c++;
+            }
+if (sortId > 0)
+            {
+                sql += $" and SortId = @{c} ";
+                AddParam("sortId", sortId);
+                c++;
+            }
+if (!string.IsNullOrEmpty(icon))
+            {
+                sql += $" and Icon = @{c} ";
+                AddParam("icon", icon);
+                c++;
+            }
+
+
+            if(page <= 0)
+            {
+                var l = GetList(sql);
+                return new Page<BillGroupModel>()
+                {
+                    CurrentPage = 0,
+                    Items = l,
+                    ItemsPerPage = 0,
+                    TotalItems = 0,
+                    TotalPages = 0
+                };
+            }
+
+           
+            sql += ApplySort(sort); 
+            var k = SearchView(sql, page, pageSize);
+            return new Page<BillGroupModel>()
+            {
+                CurrentPage = k.CurrentPage,
+                Items = k.Items,
+                ItemsPerPage = k.ItemsPerPage,
+                TotalItems = k.TotalItems,
+                TotalPages = k.TotalPages
+            };
+        }
+
+        /// <summary>
+        /// Get BillGroup Entity
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public BillGroupModel GetModel(int Id)
+        {
+            var sql = "select * from " + Constants.DBPrefix + "billgroupmodel where Id = @0"; 
+            AddParam("Id", Id);
+            return GetRecord(sql);
+        }
+
+        /// <summary>
+        /// Check exists
+        /// </summary>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="sortId"></param>
+/// <param name="icon"></param>
+/// 
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public bool ItemExists(string name = "",string code = "",string info = "",int sortId = 0,string icon = "", int Id = 0)
+        {
+            var check = Search(name,code,info,sortId,icon);
+            if (Id > 0)
+            {
+                check = check.Where(x => x.Id != Id);
+            }
+            return check.Any();
+        }
+
+        /// <summary>
+        /// check exists
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public bool ItemExists(BillGroupModel model, int Id = 0)
+        {
+            var check = Search(model.Name,model.Code,model.Info,model.SortId,model.Icon);
+            if (Id > 0)
+            {
+                check = check.Where(x => x.Id != Id);
+            }
+            return check.Any();
+        }
+    }
+
+-------------------------------------------------
+
+REPOSITORY SERVICE
+
+        BillGroupRepository BillGroups { get; }
+
+        private BillGroupRepository _billgroups;
+        public BillGroupRepository BillGroups { get { if (_billgroups == null) { _billgroups = new BillGroupRepository(_context); } return _billgroups; } }
+
+
+-------------------------------------------------
+
+SERVICE
+
+
+        /// <summary>
+        /// BillGroup Service
+        /// </summary>
+        public partial class BillGroupService : BaseService<BillGroup, BillGroupModel, BillGroupForm, int>
+        {
+
+        }
+
+
+        /// <summary>
+        /// BillGroup Service
+        /// </summary>
+        public partial class BillGroupService : BaseService<BillGroup, BillGroupModel, BillGroupForm, int>
+        {
+            /// <summary>
+            /// IQueryable BillGroup Entity Search
+            /// </summary>
+            /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="sortId"></param>
+/// <param name="icon"></param>
+/// <returns></returns>
+            public IQueryable<BillGroup> Search(string name = "",string code = "",string info = "",int sortId = 0,string icon = "")
+            {
+                return DataModule.BillGroups.Search(name,code,info,sortId,icon);
+            }
+            
+
+            /// <summary>
+            /// IEnumerable BillGroup Model Search
+            /// </summary>
+            /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="sortId"></param>
+/// <param name="icon"></param>
+/// <returns></returns>
+            public IEnumerable<BillGroupModel> SearchModel(string name = "",string code = "",string info = "",int sortId = 0,string icon = "")
+            {
+                return DataModule.BillGroups.Search(name,code,info,sortId,icon)
+                    .Select(FactoryModule.BillGroups.CreateModel);
+            }
+
+            
+            /// <summary>
+            /// Paged BillGroup Model Search
+            /// </summary>
+            /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="sortId"></param>
+/// <param name="icon"></param>
+/// <param name="page"></param>
+            ///<param name="pageSize"></param>
+            ///<param name="sort"></param>
+            /// <returns></returns>
+            public Page<BillGroupModel> SearchView(string name = "",string code = "",string info = "",int sortId = 0,string icon = "",
+                long page = 1,long pageSize = 10, string sort = "")
+            {
+                return DataModule.BillGroups.SearchView(name,code,info,sortId,icon, page, pageSize, sort);
+            }
+
+            /// <summary>
+            /// Create BillGroup Model from BillGroup Entity
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <returns></returns>
+            public BillGroupModel Create(BillGroup entity)
+            {
+                return FactoryModule.BillGroups.CreateModel(entity);
+            }
+
+	        /// <summary>
+            /// Create BillGroup Model from BillGroup Form
+            /// </summary>
+            /// <param name="form"></param>
+            /// <returns></returns>
+            public BillGroupModel Create(BillGroupForm form)
+            {
+                return FactoryModule.BillGroups.CreateModel(form);
+            }
+
+            /// <summary>
+            /// Create BillGroup Entity from BillGroup Model
+            /// </summary>
+            /// <param name="model"></param>
+            /// <returns></returns>
+            public BillGroup Create(BillGroupModel model)
+            {
+                return FactoryModule.BillGroups.CreateEntity(model);
+            }
+
+            /// <summary>
+            /// Check Uniqueness of BillGroup before creation
+            /// </summary>
+            /// <param name="model"></param>
+            /// <returns></returns>
+            public bool CreateExists(BillGroupModel model)
+            {
+                return DataModule.BillGroups.ItemExists(model);
+            }
+
+            /// <summary>
+            /// Delete BillGroup
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <returns></returns>
+            public int Delete(BillGroup entity)
+            {
+                return DataModule.BillGroups.Delete(entity);
+            }
+
+            /// <summary>
+            /// Get BillGroup Entity
+            /// </summary>
+            /// <param name="id"></param>
+            /// <returns></returns>
+            public BillGroup Get(int id)
+            {
+                return DataModule.BillGroups.Get(id);
+            }
+
+
+
+            /// <summary>
+            /// Get BillGroup Model
+            /// </summary>
+            /// <param name="id"></param>
+            /// <returns></returns>
+            public BillGroupModel GetModel(int id)
+            { 
+                return DataModule.BillGroups.GetModel(id);
+            }
+
+            /// <summary>
+            /// Insert new BillGroup to DB
+            /// </summary>
+            /// <param name="model"></param>
+            /// <param name="check"></param>
+            /// <returns></returns>
+            public BillGroupModel Insert(BillGroupModel model, bool check = true)
+            {
+                if (check)
+                {
+                    var routeSearch = DataModule.BillGroups.ItemExists(model);
+                    if (routeSearch)
+                    {
+                        throw new Exception("BillGroup Name already exists");
+                    }
+                }
+                var entity = FactoryModule.BillGroups.CreateEntity(model);
+                entity.RecordStatus = Core.Domain.Enum.RecordStatus.Active;
+                DataModule.BillGroups.Insert(entity);
+                return FactoryModule.BillGroups.CreateModel(entity);
+            }
+
+            /// <summary>
+            /// Update a BillGroup Entity with a BillGroup Model with selected fields
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <param name="model"></param>
+            /// <param name="fields"></param>
+            /// <returns></returns>
+            public BillGroup Patch(BillGroup entity, BillGroupModel model, string fields)
+            {
+                return FactoryModule.BillGroups.Patch(entity, model, fields);
+            }
+
+            /// <summary>
+            /// Update BillGroup, with Patch Options Optional
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <param name="model"></param>
+            /// <param name="fields"></param>
+            /// <returns></returns>
+            public BillGroupModel Update(BillGroup entity, BillGroupModel model = null, string fields = "")
+            {
+                if (model != null)
+                {
+                    entity = Patch(entity, model, fields);
+                }
+                return FactoryModule.BillGroups.CreateModel(DataModule.BillGroups.Update(entity));
+            }
+
+            /// <summary>
+            /// Check Uniqueness of BillGroup before update
+            /// </summary>
+            /// <param name="model"></param>
+            /// <returns></returns>
+            public bool UpdateExists(BillGroupModel model)
+            {
+                return DataModule.BillGroups.ItemExists(model, model.Id);
+            }
+
+    }
+
+-------------------------------------------------
+
+SERVICE MODULE
+
+        BillGroupService BillGroupService { get; }
+
+        private BillGroupService _billgroup;
+
+        /// <summary>
+        /// BillGroup Service Module
+        /// </summary>
+        public BillGroupService BillGroupService { get { if (_billgroup == null) { _billgroup = new BillGroupService(); } return _billgroup; } }
+ 
+
+-------------------------------------------------
+
+API CONTROLLER
+
+
+    /// <summary>
+    /// BillGroups CRUD
+    /// </summary>
+    [RoutePrefix("api/BillGroups")]
+    public class BillGroupsController : BaseApiController
+    {
+        /// <summary>
+        /// Search, Page, filter and Shaped BillGroups
+        /// </summary>
+        /// <param name="sort"></param>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="sortId"></param>
+/// <param name="icon"></param>
+/// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="fields"></param>
+        /// <param name="draw"></param>
+        /// <returns></returns>
+        [ResponseType(typeof(IEnumerable<BillGroupModel>))]
+        [Route("Search", Name = "BillGroupApi")]
+        [HttpGet]
+        public IHttpActionResult Get(string sort = "id", string name = "",string code = "",string info = "",int sortId = 0,string icon = "", long page = 1, long pageSize = 10, string fields= "", int draw = 1)
+        {  
+            try
+            {
+                var items = Logic.BillGroupService.SearchView(name,code,info,sortId,icon,page, pageSize, sort);
+                
+                if (page > items.TotalPages) page = items.TotalPages;
+                var jo = new JObjectHelper(); 
+                jo.Add("name", name);
+jo.Add("code", code);
+jo.Add("info", info);
+jo.Add("sortId", sortId);
+jo.Add("icon", icon);
+
+                jo.Add("fields", fields); 
+                jo.Add("sort", sort);
+                var urlHelper = new UrlHelper(Request);
+                var linkBuilder = new PageLinkBuilder(urlHelper, "BillGroupApi", jo, page, pageSize, items.TotalItems, draw); 
+                AddHeader("X-Pagination", linkBuilder.PaginationHeader);
+                var dto = new List<BillGroupModel>();
+                if (items.TotalItems <= 0) return Ok(dto); 
+                var dtos = items.Items.ShapeList(fields);
+                return Ok(dtos);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        /// <summary>
+        /// Get BillGroup by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Detail")]
+        [ResponseType(typeof(BillGroupModel))]
+        public IHttpActionResult Get(int id)
+        {
+            try
+            {
+                var item = Logic.BillGroupService.GetModel(id);
+                if (item == null)
+                {
+                    return NotFound();
+                }
+                return Ok(item);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+         /// <summary>
+        /// Add BillGroup
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [Route("Create")]
+        [HttpPost]
+        [ResponseType(typeof(BillGroupModel))]
+        public IHttpActionResult Create(BillGroupForm form)
+        {
+            try
+            {
+                var model = Logic.BillGroupService.Create(form);
+                var check = Logic.BillGroupService.CreateExists(model);
+                if (check)
+                {
+                    return BadRequest("BillGroup already exists");
+                }
+                var dto = Logic.BillGroupService.Insert(model);
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+                /// <summary>
+        /// Update BillGroup
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [Route("Update")]
+        [HttpPost]
+        [ResponseType(typeof(BillGroupModel))]
+        public IHttpActionResult Update(int id, BillGroupForm form)
+        {
+            try
+            {
+                var model = Logic.BillGroupService.Create(form);
+                if (id != model.Id)
+                    return BadRequest("Route Parameter does mot match model ID"); 
+                var found = Logic.BillGroupService.Get(id);
+                if (found == null)
+                    return NotFound(); 
+                var check = Logic.BillGroupService.UpdateExists(model); 
+                if (Logic.BillGroupService.UpdateExists(model))
+                    return BadRequest("BillGroup configuration already exists");
+                var dto = Logic.BillGroupService.Update(found, model,
+                    "Name,Code,Info,SortId,Icon,RecordStatus");
+                return Ok(dto);
+            } 
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Delete BillGroup
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Route("Delete")]
+        [HttpPost]
+        [ResponseType(typeof(BillGroupModel))]
+        public IHttpActionResult Delete(int id)
+        {
+            try
+            {
+                var found = Logic.BillGroupService.Get(id);
+                if (found == null)
+                    return NotFound();
+                Logic.BillGroupService.Delete(found); 
+                return Content(HttpStatusCode.NoContent,found);
+            } 
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        } 
+    }
+
+
+-------------------------------------------------
+
+API Library Service
+public class BillGroupAPI : BaseServiceAPI<BillGroupModel, int>
+    { 
+        public BillGroupAPI()
+        {
+            _api = "/api/BillGroups";
+        }
+ 
+        public async Task<ApiResponse<IEnumerable<BillGroupModel>>> Search(string name = "",string code = "",string info = "",int sortId = 0,string icon = "",
+            string sort = "id",int page = 1, int pageSize = 10, string fields = "", bool extended = false)
+        {
+            var jo = new JObjectHelper(sort, page, pageSize, fields, extended);
+            jo.Add("name", name);
+jo.Add("code", code);
+jo.Add("info", info);
+jo.Add("sortId", sortId);
+jo.Add("icon", icon);
+             
+            Route("Search");
+            return await Search<BillGroupModel>(jo); 
+        }        
+    }
+
+-------------------------------------------------
+
+API Library MODULE
+private BillGroupAPI _billgroup;
+
+        /// <summary>
+        /// BillGroup API Module
+        /// </summary>
+        public BillGroupAPI BillGroupAPI { get { if (_billgroup == null) { _billgroup = new BillGroupAPI(); } return _billgroup; } }
+
+
+-------------------------------------------------
+
+MVC CONTROLLER
+     
+    public class BillGroupsController : BaseController
+    {
+        
+        //[CustomAuth(Permissions = "BillGroupsSearch")]
+        public ActionResult Index(string name = "",string code = "",string info = "",int sortId = 0,string icon = "", string act="")
+        {
+            if (act.ToLower() == "export")
+            {
+                var data = Logic.BillGroupService.SearchView(name,code,info,sortId,icon,page: 0);
+                Download(data); 
+            }
+            return View();
+        }
+
+    }
+
+
+-------------------------------------------------
+
+SAVE VIEW
+
+            
+
+-------------------------------------------------
+
+INDEX VIEW
+@{
+    ViewBag.Title = "BillGroups";
+    ViewBag.Header = "BillGroups";
+    string sim = Bootes.Core.Common.Constants.API_URL;
+    
+}
+@section styles{
+
+
+}
+
+<div class="spp" data-perm="BillGroupsSearch"></div>
+ 
+   
+ 
+
+  <div class="row" id="filterView"> 
+            <div class="col-md-12">
+                <div class="collapse" id="collapseExample">
+
+                    <form action="" class="form p-3 mb-0 bg-light" method="get">
+                        <div class="row">
+
+                            <div class="form-group col-sm-12 col-md-3">
+    <small>Name</small>
+    <input type="text" name="name" id="name" value="" placeholder="Name" class="form-control form-control-sm" v-model="formsearch.Name" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>Code</small>
+    <input type="text" name="code" id="code" value="" placeholder="Code" class="form-control form-control-sm" v-model="formsearch.Code" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>Info</small>
+    <input type="text" name="info" id="info" value="" placeholder="Info" class="form-control form-control-sm" v-model="formsearch.Info" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>SortId</small>
+    <input type="text" name="sortId" id="sortId" value="" placeholder="SortId" class="form-control form-control-sm" v-model="formsearch.SortId" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>Icon</small>
+    <input type="text" name="icon" id="icon" value="" placeholder="Icon" class="form-control form-control-sm" v-model="formsearch.Icon" >
+</div>
+ 
+                            
+                            <div class="form-group col-sm-12 text-right mb-0">
+                                <button class="btn btn-sm btn-warning" type="reset" value="Cancel">
+                                    Cancel
+                                </button>
+                                <button class="btn btn-sm btn-primary" type="submit" name="act">
+                                    Search
+                                </button>
+                                <button class="btn btn-sm btn-dark" type="submit" name="act" value="export">
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-right">
+                    <a class="btn btn-light btn-sm" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        Filter/Export
+                        <i class="fa fa-search"></i>
+                    </a>
+                    <a href="javascript:;" onclick="FormUtil.FormCreate()" role="button" class="btn btn-light btn-sm">
+                        New
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </div>
+                <table id="grid" class="table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="javascript:;" onclick="FormUtil.FormCreate()">
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </th>
+                             <th>Name</th> 
+ <th>Code</th> 
+ <th>Info</th> 
+ <th>SortId</th> 
+ <th>Icon</th> 
+ <th>Status</th> 
+ <th>Created</th> 
+ <th>Updated</th> 
+
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <div id="appView">
+        <!-- Modal -->
+            <div class="modal fade" id="crudModal" tabindex="-1" role="dialog" aria-labelledby="crudModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="crudModallLabel">{{ frmTitle }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <form method="post" @@submit.prevent="submit">
+
+                                        <input data-val="true" data-val-number="The field Id must be a number." data-val-required="The Id field is required." id="Id"
+                                            name="Id" type="hidden" value="0" v-model="form.Id" />
+                                        <div class="white-box">
+                                            <div class="row">
+                                            <div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="Name">Name</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The Name field is required." id="Name"
+        name="Name" type="text" value="" v-model="form.Name" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="Code">Code</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The Code field is required." id="Code"
+        name="Code" type="text" value="" v-model="form.Code" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="Info">Info</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The Info field is required." id="Info"
+        name="Info" type="text" value="" v-model="form.Info" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="SortId">SortId</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The SortId field is required." id="SortId"
+        name="SortId" type="text" value="" v-model="form.SortId" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="Icon">Icon</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The Icon field is required." id="Icon"
+        name="Icon" type="text" value="" v-model="form.Icon" />
+</div>
+
+                                                  
+                                                <div class="form-group col-sm-6">
+
+                                                    <input checked="checked" data-val="true" data-val-required="The RecordStatus field is required." id="RecordStatus" name="RecordStatus"
+                                                        type="radio" value="0"  v-model="form.RecordStatus" />
+                                                    <label>Pending</label>
+                                                    <input id="RecordStatus" name="RecordStatus" type="radio" value="1" v-model="form.RecordStatus" />
+                                                    <label>Active</label>
+                                                    <input id="RecordStatus" name="RecordStatus" type="radio" value="2" v-model="form.RecordStatus" />
+                                                    <label>Disabled</label>
+                                                </div>
+                                                <div class="form-group col-sm-6 text-right">
+                                                    <button type="reset" class="btn btn-warning btn-sm">Cancel</button>
+                                                    <input type="submit" value="Submit" class="btn btn-primary btn-sm" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="detailModalLabel">{{ frmTitle }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <dl class="row">
+ 
+                                
+                                <dt class="col-sm-3">Name</dt>
+                                <dd class="col-sm-9">{{ form.Name }}</dd>
+
+                                <dt class="col-sm-3">Code</dt>
+                                <dd class="col-sm-9">{{ form.Code }}</dd>
+
+                                <dt class="col-sm-3">Info</dt>
+                                <dd class="col-sm-9">{{ form.Info }}</dd>
+
+                                <dt class="col-sm-3">SortId</dt>
+                                <dd class="col-sm-9">{{ form.SortId }}</dd>
+
+                                <dt class="col-sm-3">Icon</dt>
+                                <dd class="col-sm-9">{{ form.Icon }}</dd>
+ 
+
+
+                                
+                                <dt class="col-sm-3">Status</dt>
+                                <dd class="col-sm-9">{{ form.RecordStatusText }}</dd>
+                                
+                                <dt class="col-sm-3">Created</dt>
+                                <dd class="col-sm-9">{{ form.CreatedAtText }}</dd>
+                                
+                                <dt class="col-sm-3">Updated</dt>
+                                <dd class="col-sm-9">{{ form.UpdatedAtText }}</dd>
+                            </dl> 
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger btn-sm" v-on:click="deleteItem">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+@section scripts
+{
+  <script type="text/javascript">
+
+        $(document).ready(function () {
+            
+            var _form = {
+                Id: 0,
+Name: "",
+Code: "",
+Info: "",
+SortId: "",
+Icon: ""
+            };
+
+            var _formsearch = {
+                Id: 0,
+Name: "",
+Code: "",
+Info: "",
+SortId: "",
+Icon: ""
+            };
+            var _columns = [
+                {
+                    "data": "Id",
+                    "render": function (data, type, row, meta) {
+                        return '<a href="javascript:;" onclick="FormUtil.FormUpdate(' + data + ')"><i class="fa fa-edit"></i></a> <a href="javascript:;" onclick="FormUtil.FormDetail(' + data + ')"><i class="fa fa-external-link-alt"></i></a>';
+                    }
+                },
+                
+{"data": "Name" },
+{"data": "Code" },
+{"data": "Info" },
+{"data": "SortId" },
+{"data": "Icon" },
+{"data": "RecordStatusText" },
+{"data": "CreatedAtText" },
+{"data": "UpdatedAtText" }
+            ];
+
+            var _list = {
+                id: 0
+            };
+
+            FormUtil.Init({
+                entity: 'BillGroups',
+                url: '@sim',
+                form: _form,
+                formsearch: _formsearch,
+                columns: _columns,
+                table: 'grid',
+                createModal: 'crudModal',
+                updateModal: 'crudModal',
+                detailModal: 'detailModal',
+                list: _list
+            });
+        });
+    </script>
+}
+
+
+-------------------------------------------------
+

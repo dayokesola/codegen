@@ -1,0 +1,981 @@
+ENTITY
+
+        /// <summary>
+        /// Provider Class
+        /// </summary>
+        public class Provider : BaseEntity<int>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+public string Name { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Code { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Info { get; set; }
+
+        }
+
+-------------------------------------------------
+
+MODEL
+
+        /// <summary>
+        /// Provider View Model
+        /// </summary>
+        [TableName("bts_providermodel")]
+        [PrimaryKey("Id")]
+        public class ProviderModel : BaseModel<int>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+public string Name { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Code { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Info { get; set; }
+
+        }
+
+-------------------------------------------------
+
+FORM
+
+        /// <summary>
+        /// Provider Form
+        /// </summary>
+        public class ProviderForm : BaseForm<int>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+public string Name { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Code { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Info { get; set; }
+
+        }
+
+-------------------------------------------------
+
+AUTOMAPPER CONFIG
+
+            cfg.CreateMap<Provider, ProviderModel>().ReverseMap();
+            cfg.CreateMap<Provider, ProviderForm>().ReverseMap();
+            cfg.CreateMap<ProviderModel, ProviderForm>().ReverseMap();
+
+-------------------------------------------------
+
+MODEL FACTORY
+
+        /// <summary>
+        /// Provider Factory
+        /// </summary>
+        public class ProviderFactory : BaseFactory<Provider, ProviderModel, ProviderForm, int>
+        {
+
+        }
+
+-------------------------------------------------
+
+
+FACTORY SERVICE
+
+        ProviderFactory Providers { get; }
+
+        private ProviderFactory _provider;
+
+        /// <summary>
+        /// Provider Factory Module
+        /// </summary>
+        public ProviderFactory Providers { get { if (_provider == null) { _provider = new ProviderFactory(); } return _provider; } }
+
+-------------------------------------------------
+
+DB CONTEXT
+
+        public DbSet<Provider> Providers { get; set; }
+ 
+        For<ProviderModel>().TableName("bts_providermodel");
+
+var txt = @"create view bts_providermodel as select x.* from bts_provider x where x.RecordStatus != 3 and x.RecordStatus != 4";
+Sql(txt);
+
+
+
+var txt = @"drop view bts_providermodel";
+Sql(txt);
+
+-------------------------------------------------
+
+ENTITY REPOSITORY
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ProviderRepository : BaseRepository<Provider, ProviderModel, int>
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        public ProviderRepository(BootesDbContext context) : base(context)
+        {
+        }
+        /// <summary>
+        /// IQueryable Provider Entity Search
+        /// </summary>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <returns></returns>
+        public IQueryable<Provider> Search(string name = "",string code = "",string info = "")
+        {
+            var table = Query();
+            if (!string.IsNullOrEmpty(name))
+            {
+                table = table.Where(x => x.Name == name);
+            }
+if (!string.IsNullOrEmpty(code))
+            {
+                table = table.Where(x => x.Code == code);
+            }
+if (!string.IsNullOrEmpty(info))
+            {
+                table = table.Where(x => x.Info == info);
+            }
+  
+            return table;
+        }
+
+        /// <summary>
+        /// Paged Provider Model Search
+        /// </summary>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="page"></param>
+        ///<param name="pageSize"></param>
+        ///<param name="sort"></param>
+        /// <returns></returns>
+        public Page<ProviderModel> SearchView(string name = "",string code = "",string info = "",
+            long page = 1, long pageSize = 10, string sort = "Id")
+        {
+            var sql = "select * from " + Constants.DBPrefix + "providermodel where Id > 0 ";
+            var c = 0;
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                sql += $" and Name = @{c} ";
+                AddParam("name", name);
+                c++;
+            }
+if (!string.IsNullOrEmpty(code))
+            {
+                sql += $" and Code = @{c} ";
+                AddParam("code", code);
+                c++;
+            }
+if (!string.IsNullOrEmpty(info))
+            {
+                sql += $" and Info = @{c} ";
+                AddParam("info", info);
+                c++;
+            }
+
+
+            if(page <= 0)
+            {
+                var l = GetList(sql);
+                return new Page<ProviderModel>()
+                {
+                    CurrentPage = 0,
+                    Items = l,
+                    ItemsPerPage = 0,
+                    TotalItems = 0,
+                    TotalPages = 0
+                };
+            }
+
+           
+            sql += ApplySort(sort); 
+            var k = SearchView(sql, page, pageSize);
+            return new Page<ProviderModel>()
+            {
+                CurrentPage = k.CurrentPage,
+                Items = k.Items,
+                ItemsPerPage = k.ItemsPerPage,
+                TotalItems = k.TotalItems,
+                TotalPages = k.TotalPages
+            };
+        }
+
+        /// <summary>
+        /// Get Provider Entity
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public ProviderModel GetModel(int Id)
+        {
+            var sql = "select * from " + Constants.DBPrefix + "providermodel where Id = @0"; 
+            AddParam("Id", Id);
+            return GetRecord(sql);
+        }
+
+        /// <summary>
+        /// Check exists
+        /// </summary>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// 
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public bool ItemExists(string name = "",string code = "",string info = "", int Id = 0)
+        {
+            var check = Search(name,code,info);
+            if (Id > 0)
+            {
+                check = check.Where(x => x.Id != Id);
+            }
+            return check.Any();
+        }
+
+        /// <summary>
+        /// check exists
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public bool ItemExists(ProviderModel model, int Id = 0)
+        {
+            var check = Search(model.Name,model.Code,model.Info);
+            if (Id > 0)
+            {
+                check = check.Where(x => x.Id != Id);
+            }
+            return check.Any();
+        }
+    }
+
+-------------------------------------------------
+
+REPOSITORY SERVICE
+
+        ProviderRepository Providers { get; }
+
+        private ProviderRepository _providers;
+        public ProviderRepository Providers { get { if (_providers == null) { _providers = new ProviderRepository(_context); } return _providers; } }
+
+
+-------------------------------------------------
+
+SERVICE
+
+
+        /// <summary>
+        /// Provider Service
+        /// </summary>
+        public partial class ProviderService : BaseService<Provider, ProviderModel, ProviderForm, int>
+        {
+
+        }
+
+
+        /// <summary>
+        /// Provider Service
+        /// </summary>
+        public partial class ProviderService : BaseService<Provider, ProviderModel, ProviderForm, int>
+        {
+            /// <summary>
+            /// IQueryable Provider Entity Search
+            /// </summary>
+            /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <returns></returns>
+            public IQueryable<Provider> Search(string name = "",string code = "",string info = "")
+            {
+                return DataModule.Providers.Search(name,code,info);
+            }
+            
+
+            /// <summary>
+            /// IEnumerable Provider Model Search
+            /// </summary>
+            /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <returns></returns>
+            public IEnumerable<ProviderModel> SearchModel(string name = "",string code = "",string info = "")
+            {
+                return DataModule.Providers.Search(name,code,info)
+                    .Select(FactoryModule.Providers.CreateModel);
+            }
+
+            
+            /// <summary>
+            /// Paged Provider Model Search
+            /// </summary>
+            /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="page"></param>
+            ///<param name="pageSize"></param>
+            ///<param name="sort"></param>
+            /// <returns></returns>
+            public Page<ProviderModel> SearchView(string name = "",string code = "",string info = "",
+                long page = 1,long pageSize = 10, string sort = "")
+            {
+                return DataModule.Providers.SearchView(name,code,info, page, pageSize, sort);
+            }
+
+            /// <summary>
+            /// Create Provider Model from Provider Entity
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <returns></returns>
+            public ProviderModel Create(Provider entity)
+            {
+                return FactoryModule.Providers.CreateModel(entity);
+            }
+
+	        /// <summary>
+            /// Create Provider Model from Provider Form
+            /// </summary>
+            /// <param name="form"></param>
+            /// <returns></returns>
+            public ProviderModel Create(ProviderForm form)
+            {
+                return FactoryModule.Providers.CreateModel(form);
+            }
+
+            /// <summary>
+            /// Create Provider Entity from Provider Model
+            /// </summary>
+            /// <param name="model"></param>
+            /// <returns></returns>
+            public Provider Create(ProviderModel model)
+            {
+                return FactoryModule.Providers.CreateEntity(model);
+            }
+
+            /// <summary>
+            /// Check Uniqueness of Provider before creation
+            /// </summary>
+            /// <param name="model"></param>
+            /// <returns></returns>
+            public bool CreateExists(ProviderModel model)
+            {
+                return DataModule.Providers.ItemExists(model);
+            }
+
+            /// <summary>
+            /// Delete Provider
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <returns></returns>
+            public int Delete(Provider entity)
+            {
+                return DataModule.Providers.Delete(entity);
+            }
+
+            /// <summary>
+            /// Get Provider Entity
+            /// </summary>
+            /// <param name="id"></param>
+            /// <returns></returns>
+            public Provider Get(int id)
+            {
+                return DataModule.Providers.Get(id);
+            }
+
+
+
+            /// <summary>
+            /// Get Provider Model
+            /// </summary>
+            /// <param name="id"></param>
+            /// <returns></returns>
+            public ProviderModel GetModel(int id)
+            { 
+                return DataModule.Providers.GetModel(id);
+            }
+
+            /// <summary>
+            /// Insert new Provider to DB
+            /// </summary>
+            /// <param name="model"></param>
+            /// <param name="check"></param>
+            /// <returns></returns>
+            public ProviderModel Insert(ProviderModel model, bool check = true)
+            {
+                if (check)
+                {
+                    var routeSearch = DataModule.Providers.ItemExists(model);
+                    if (routeSearch)
+                    {
+                        throw new Exception("Provider Name already exists");
+                    }
+                }
+                var entity = FactoryModule.Providers.CreateEntity(model);
+                entity.RecordStatus = Core.Domain.Enum.RecordStatus.Active;
+                DataModule.Providers.Insert(entity);
+                return FactoryModule.Providers.CreateModel(entity);
+            }
+
+            /// <summary>
+            /// Update a Provider Entity with a Provider Model with selected fields
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <param name="model"></param>
+            /// <param name="fields"></param>
+            /// <returns></returns>
+            public Provider Patch(Provider entity, ProviderModel model, string fields)
+            {
+                return FactoryModule.Providers.Patch(entity, model, fields);
+            }
+
+            /// <summary>
+            /// Update Provider, with Patch Options Optional
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <param name="model"></param>
+            /// <param name="fields"></param>
+            /// <returns></returns>
+            public ProviderModel Update(Provider entity, ProviderModel model = null, string fields = "")
+            {
+                if (model != null)
+                {
+                    entity = Patch(entity, model, fields);
+                }
+                return FactoryModule.Providers.CreateModel(DataModule.Providers.Update(entity));
+            }
+
+            /// <summary>
+            /// Check Uniqueness of Provider before update
+            /// </summary>
+            /// <param name="model"></param>
+            /// <returns></returns>
+            public bool UpdateExists(ProviderModel model)
+            {
+                return DataModule.Providers.ItemExists(model, model.Id);
+            }
+
+    }
+
+-------------------------------------------------
+
+SERVICE MODULE
+
+        ProviderService ProviderService { get; }
+
+        private ProviderService _provider;
+
+        /// <summary>
+        /// Provider Service Module
+        /// </summary>
+        public ProviderService ProviderService { get { if (_provider == null) { _provider = new ProviderService(); } return _provider; } }
+ 
+
+-------------------------------------------------
+
+API CONTROLLER
+
+
+    /// <summary>
+    /// Providers CRUD
+    /// </summary>
+    [RoutePrefix("api/Providers")]
+    public class ProvidersController : BaseApiController
+    {
+        /// <summary>
+        /// Search, Page, filter and Shaped Providers
+        /// </summary>
+        /// <param name="sort"></param>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="info"></param>
+/// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="fields"></param>
+        /// <param name="draw"></param>
+        /// <returns></returns>
+        [ResponseType(typeof(IEnumerable<ProviderModel>))]
+        [Route("Search", Name = "ProviderApi")]
+        [HttpGet]
+        public IHttpActionResult Get(string sort = "id", string name = "",string code = "",string info = "", long page = 1, long pageSize = 10, string fields= "", int draw = 1)
+        {  
+            try
+            {
+                var items = Logic.ProviderService.SearchView(name,code,info,page, pageSize, sort);
+                
+                if (page > items.TotalPages) page = items.TotalPages;
+                var jo = new JObjectHelper(); 
+                jo.Add("name", name);
+jo.Add("code", code);
+jo.Add("info", info);
+
+                jo.Add("fields", fields); 
+                jo.Add("sort", sort);
+                var urlHelper = new UrlHelper(Request);
+                var linkBuilder = new PageLinkBuilder(urlHelper, "ProviderApi", jo, page, pageSize, items.TotalItems, draw); 
+                AddHeader("X-Pagination", linkBuilder.PaginationHeader);
+                var dto = new List<ProviderModel>();
+                if (items.TotalItems <= 0) return Ok(dto); 
+                var dtos = items.Items.ShapeList(fields);
+                return Ok(dtos);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        /// <summary>
+        /// Get Provider by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Detail")]
+        [ResponseType(typeof(ProviderModel))]
+        public IHttpActionResult Get(int id)
+        {
+            try
+            {
+                var item = Logic.ProviderService.GetModel(id);
+                if (item == null)
+                {
+                    return NotFound();
+                }
+                return Ok(item);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+         /// <summary>
+        /// Add Provider
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [Route("Create")]
+        [HttpPost]
+        [ResponseType(typeof(ProviderModel))]
+        public IHttpActionResult Create(ProviderForm form)
+        {
+            try
+            {
+                var model = Logic.ProviderService.Create(form);
+                var check = Logic.ProviderService.CreateExists(model);
+                if (check)
+                {
+                    return BadRequest("Provider already exists");
+                }
+                var dto = Logic.ProviderService.Insert(model);
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+                /// <summary>
+        /// Update Provider
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [Route("Update")]
+        [HttpPost]
+        [ResponseType(typeof(ProviderModel))]
+        public IHttpActionResult Update(int id, ProviderForm form)
+        {
+            try
+            {
+                var model = Logic.ProviderService.Create(form);
+                if (id != model.Id)
+                    return BadRequest("Route Parameter does mot match model ID"); 
+                var found = Logic.ProviderService.Get(id);
+                if (found == null)
+                    return NotFound(); 
+                var check = Logic.ProviderService.UpdateExists(model); 
+                if (Logic.ProviderService.UpdateExists(model))
+                    return BadRequest("Provider configuration already exists");
+                var dto = Logic.ProviderService.Update(found, model,
+                    "Name,Code,Info,RecordStatus");
+                return Ok(dto);
+            } 
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Delete Provider
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Route("Delete")]
+        [HttpPost]
+        [ResponseType(typeof(ProviderModel))]
+        public IHttpActionResult Delete(int id)
+        {
+            try
+            {
+                var found = Logic.ProviderService.Get(id);
+                if (found == null)
+                    return NotFound();
+                Logic.ProviderService.Delete(found); 
+                return Content(HttpStatusCode.NoContent,found);
+            } 
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        } 
+    }
+
+
+-------------------------------------------------
+
+API Library Service
+public class ProviderAPI : BaseServiceAPI<ProviderModel, int>
+    { 
+        public ProviderAPI()
+        {
+            _api = "/api/Providers";
+        }
+ 
+        public async Task<ApiResponse<IEnumerable<ProviderModel>>> Search(string name = "",string code = "",string info = "",
+            string sort = "id",int page = 1, int pageSize = 10, string fields = "", bool extended = false)
+        {
+            var jo = new JObjectHelper(sort, page, pageSize, fields, extended);
+            jo.Add("name", name);
+jo.Add("code", code);
+jo.Add("info", info);
+             
+            Route("Search");
+            return await Search<ProviderModel>(jo); 
+        }        
+    }
+
+-------------------------------------------------
+
+API Library MODULE
+private ProviderAPI _provider;
+
+        /// <summary>
+        /// Provider API Module
+        /// </summary>
+        public ProviderAPI ProviderAPI { get { if (_provider == null) { _provider = new ProviderAPI(); } return _provider; } }
+
+
+-------------------------------------------------
+
+MVC CONTROLLER
+     
+    public class ProvidersController : BaseController
+    {
+        
+        //[CustomAuth(Permissions = "ProvidersSearch")]
+        public ActionResult Index(string name = "",string code = "",string info = "", string act="")
+        {
+            if (act.ToLower() == "export")
+            {
+                var data = Logic.ProviderService.SearchView(name,code,info,page: 0);
+                Download(data); 
+            }
+            return View();
+        }
+
+    }
+
+
+-------------------------------------------------
+
+SAVE VIEW
+
+            
+
+-------------------------------------------------
+
+INDEX VIEW
+@{
+    ViewBag.Title = "Providers";
+    ViewBag.Header = "Providers";
+    string sim = Bootes.Core.Common.Constants.API_URL;
+    
+}
+@section styles{
+
+
+}
+
+<div class="spp" data-perm="ProvidersSearch"></div>
+ 
+   
+ 
+
+  <div class="row" id="filterView"> 
+            <div class="col-md-12">
+                <div class="collapse" id="collapseExample">
+
+                    <form action="" class="form p-3 mb-0 bg-light" method="get">
+                        <div class="row">
+
+                            <div class="form-group col-sm-12 col-md-3">
+    <small>Name</small>
+    <input type="text" name="name" id="name" value="" placeholder="Name" class="form-control form-control-sm" v-model="formsearch.Name" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>Code</small>
+    <input type="text" name="code" id="code" value="" placeholder="Code" class="form-control form-control-sm" v-model="formsearch.Code" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>Info</small>
+    <input type="text" name="info" id="info" value="" placeholder="Info" class="form-control form-control-sm" v-model="formsearch.Info" >
+</div>
+ 
+                            
+                            <div class="form-group col-sm-12 text-right mb-0">
+                                <button class="btn btn-sm btn-warning" type="reset" value="Cancel">
+                                    Cancel
+                                </button>
+                                <button class="btn btn-sm btn-primary" type="submit" name="act">
+                                    Search
+                                </button>
+                                <button class="btn btn-sm btn-dark" type="submit" name="act" value="export">
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-right">
+                    <a class="btn btn-light btn-sm" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        Filter/Export
+                        <i class="fa fa-search"></i>
+                    </a>
+                    <a href="javascript:;" onclick="FormUtil.FormCreate()" role="button" class="btn btn-light btn-sm">
+                        New
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </div>
+                <table id="grid" class="table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="javascript:;" onclick="FormUtil.FormCreate()">
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </th>
+                             <th>Name</th> 
+ <th>Code</th> 
+ <th>Info</th> 
+ <th>Status</th> 
+ <th>Created</th> 
+ <th>Updated</th> 
+
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <div id="appView">
+        <!-- Modal -->
+            <div class="modal fade" id="crudModal" tabindex="-1" role="dialog" aria-labelledby="crudModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="crudModallLabel">{{ frmTitle }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <form method="post" @@submit.prevent="submit">
+
+                                        <input data-val="true" data-val-number="The field Id must be a number." data-val-required="The Id field is required." id="Id"
+                                            name="Id" type="hidden" value="0" v-model="form.Id" />
+                                        <div class="white-box">
+                                            <div class="row">
+                                            <div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="Name">Name</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The Name field is required." id="Name"
+        name="Name" type="text" value="" v-model="form.Name" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="Code">Code</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The Code field is required." id="Code"
+        name="Code" type="text" value="" v-model="form.Code" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="Info">Info</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The Info field is required." id="Info"
+        name="Info" type="text" value="" v-model="form.Info" />
+</div>
+
+                                                  
+                                                <div class="form-group col-sm-6">
+
+                                                    <input checked="checked" data-val="true" data-val-required="The RecordStatus field is required." id="RecordStatus" name="RecordStatus"
+                                                        type="radio" value="0"  v-model="form.RecordStatus" />
+                                                    <label>Pending</label>
+                                                    <input id="RecordStatus" name="RecordStatus" type="radio" value="1" v-model="form.RecordStatus" />
+                                                    <label>Active</label>
+                                                    <input id="RecordStatus" name="RecordStatus" type="radio" value="2" v-model="form.RecordStatus" />
+                                                    <label>Disabled</label>
+                                                </div>
+                                                <div class="form-group col-sm-6 text-right">
+                                                    <button type="reset" class="btn btn-warning btn-sm">Cancel</button>
+                                                    <input type="submit" value="Submit" class="btn btn-primary btn-sm" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="detailModalLabel">{{ frmTitle }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <dl class="row">
+ 
+                                
+                                <dt class="col-sm-3">Name</dt>
+                                <dd class="col-sm-9">{{ form.Name }}</dd>
+
+                                <dt class="col-sm-3">Code</dt>
+                                <dd class="col-sm-9">{{ form.Code }}</dd>
+
+                                <dt class="col-sm-3">Info</dt>
+                                <dd class="col-sm-9">{{ form.Info }}</dd>
+ 
+
+
+                                
+                                <dt class="col-sm-3">Status</dt>
+                                <dd class="col-sm-9">{{ form.RecordStatusText }}</dd>
+                                
+                                <dt class="col-sm-3">Created</dt>
+                                <dd class="col-sm-9">{{ form.CreatedAtText }}</dd>
+                                
+                                <dt class="col-sm-3">Updated</dt>
+                                <dd class="col-sm-9">{{ form.UpdatedAtText }}</dd>
+                            </dl> 
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger btn-sm" v-on:click="deleteItem">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+@section scripts
+{
+  <script type="text/javascript">
+
+        $(document).ready(function () {
+            
+            var _form = {
+                Id: 0,
+Name: "",
+Code: "",
+Info: ""
+            };
+
+            var _formsearch = {
+                Id: 0,
+Name: "",
+Code: "",
+Info: ""
+            };
+            var _columns = [
+                {
+                    "data": "Id",
+                    "render": function (data, type, row, meta) {
+                        return '<a href="javascript:;" onclick="FormUtil.FormUpdate(' + data + ')"><i class="fa fa-edit"></i></a> <a href="javascript:;" onclick="FormUtil.FormDetail(' + data + ')"><i class="fa fa-external-link-alt"></i></a>';
+                    }
+                },
+                
+{"data": "Name" },
+{"data": "Code" },
+{"data": "Info" },
+{"data": "RecordStatusText" },
+{"data": "CreatedAtText" },
+{"data": "UpdatedAtText" }
+            ];
+
+            var _list = {
+                id: 0
+            };
+
+            FormUtil.Init({
+                entity: 'Providers',
+                url: '@sim',
+                form: _form,
+                formsearch: _formsearch,
+                columns: _columns,
+                table: 'grid',
+                createModal: 'crudModal',
+                updateModal: 'crudModal',
+                detailModal: 'detailModal',
+                list: _list
+            });
+        });
+    </script>
+}
+
+
+-------------------------------------------------
+

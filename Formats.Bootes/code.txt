@@ -1,0 +1,1124 @@
+ENTITY
+
+        /// <summary>
+        /// Product Class
+        /// </summary>
+        public class Product : BaseEntity<int>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+public string Name { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Code { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public decimal CostPrice { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public decimal SellPrice { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public DateTime PurchaseDate { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public int ProductStatus { get; set; }
+
+        }
+
+-------------------------------------------------
+
+MODEL
+
+        /// <summary>
+        /// Product View Model
+        /// </summary>
+        [TableName("bts_productmodel")]
+        [PrimaryKey("Id")]
+        public class ProductModel : BaseModel<int>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+public string Name { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Code { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public decimal CostPrice { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public decimal SellPrice { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public DateTime PurchaseDate { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public int ProductStatus { get; set; }
+
+        }
+
+-------------------------------------------------
+
+FORM
+
+        /// <summary>
+        /// Product Form
+        /// </summary>
+        public class ProductForm : BaseForm<int>
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+public string Name { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public string Code { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public decimal CostPrice { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public decimal SellPrice { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public DateTime PurchaseDate { get; set; }
+/// <summary>
+            /// 
+            /// </summary>
+public int ProductStatus { get; set; }
+
+        }
+
+-------------------------------------------------
+
+AUTOMAPPER CONFIG
+
+            cfg.CreateMap<Product, ProductModel>().ReverseMap();
+            cfg.CreateMap<Product, ProductForm>().ReverseMap();
+            cfg.CreateMap<ProductModel, ProductForm>().ReverseMap();
+
+-------------------------------------------------
+
+MODEL FACTORY
+
+        /// <summary>
+        /// Product Factory
+        /// </summary>
+        public class ProductFactory : BaseFactory<Product, ProductModel, ProductForm, int>
+        {
+
+        }
+
+-------------------------------------------------
+
+
+FACTORY SERVICE
+
+        ProductFactory Products { get; }
+
+        private ProductFactory _product;
+
+        /// <summary>
+        /// Product Factory Module
+        /// </summary>
+        public ProductFactory Products { get { if (_product == null) { _product = new ProductFactory(); } return _product; } }
+
+-------------------------------------------------
+
+DB CONTEXT
+
+        public DbSet<Product> Products { get; set; }
+ 
+        For<ProductModel>().TableName("bts_productmodel");
+
+var txt = @"create view bts_productmodel as select x.* from bts_product x where x.RecordStatus != 3 and x.RecordStatus != 4";
+Sql(txt);
+
+
+
+var txt = @"drop view bts_productmodel";
+Sql(txt);
+
+-------------------------------------------------
+
+ENTITY REPOSITORY
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ProductRepository : BaseRepository<Product, ProductModel, int>
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        public ProductRepository(BootesDbContext context) : base(context)
+        {
+        }
+        /// <summary>
+        /// IQueryable Product Entity Search
+        /// </summary>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="costPrice"></param>
+/// <param name="sellPrice"></param>
+/// <param name="purchaseDate"></param>
+/// <param name="productStatus"></param>
+/// <returns></returns>
+        public IQueryable<Product> Search(string name = "",string code = "",decimal costPrice = 0,decimal sellPrice = 0,DateTime? purchaseDate = null,int productStatus = 0)
+        {
+            var table = Query();
+            if (!string.IsNullOrEmpty(name))
+            {
+                table = table.Where(x => x.Name == name);
+            }
+if (!string.IsNullOrEmpty(code))
+            {
+                table = table.Where(x => x.Code == code);
+            }
+if (costPrice > 0)
+            {
+                table = table.Where(x => x.CostPrice == costPrice);
+            }
+if (sellPrice > 0)
+            {
+                table = table.Where(x => x.SellPrice == sellPrice);
+            }
+if (purchaseDate.HasValue)
+            {
+                var purchaseDateVal =  purchaseDate.GetValueOrDefault();
+                table = table.Where(x => x.PurchaseDate == purchaseDateVal);
+            }
+if (productStatus > 0)
+            {
+                table = table.Where(x => x.ProductStatus == productStatus);
+            }
+  
+            return table;
+        }
+
+        /// <summary>
+        /// Paged Product Model Search
+        /// </summary>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="costPrice"></param>
+/// <param name="sellPrice"></param>
+/// <param name="purchaseDate"></param>
+/// <param name="productStatus"></param>
+/// <param name="page"></param>
+        ///<param name="pageSize"></param>
+        ///<param name="sort"></param>
+        /// <returns></returns>
+        public Page<ProductModel> SearchView(string name = "",string code = "",decimal costPrice = 0,decimal sellPrice = 0,DateTime? purchaseDate = null,int productStatus = 0,
+            long page = 1, long pageSize = 10, string sort = "Id")
+        {
+            var sql = "select * from " + Constants.DBPrefix + "productmodel where Id > 0 ";
+            var c = 0;
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                sql += $" and Name = @{c} ";
+                AddParam("name", name);
+                c++;
+            }
+if (!string.IsNullOrEmpty(code))
+            {
+                sql += $" and Code = @{c} ";
+                AddParam("code", code);
+                c++;
+            }
+if (costPrice > 0)
+            {
+                sql += $" and CostPrice = @{c} ";
+                AddParam("costPrice", costPrice);
+                c++;
+            }
+if (sellPrice > 0)
+            {
+                sql += $" and SellPrice = @{c} ";
+                AddParam("sellPrice", sellPrice);
+                c++;
+            }
+if (purchaseDate.HasValue)
+            {
+                var purchaseDateVal =  purchaseDate.GetValueOrDefault();
+                sql += $" and PurchaseDate = @{c} ";
+                AddParam("purchaseDate", purchaseDateVal);
+                c++;
+            }
+if (productStatus > 0)
+            {
+                sql += $" and ProductStatus = @{c} ";
+                AddParam("productStatus", productStatus);
+                c++;
+            }
+
+
+            if(page <= 0)
+            {
+                var l = GetList(sql);
+                return new Page<ProductModel>()
+                {
+                    CurrentPage = 0,
+                    Items = l,
+                    ItemsPerPage = 0,
+                    TotalItems = 0,
+                    TotalPages = 0
+                };
+            }
+
+           
+            sql += ApplySort(sort); 
+            var k = SearchView(sql, page, pageSize);
+            return new Page<ProductModel>()
+            {
+                CurrentPage = k.CurrentPage,
+                Items = k.Items,
+                ItemsPerPage = k.ItemsPerPage,
+                TotalItems = k.TotalItems,
+                TotalPages = k.TotalPages
+            };
+        }
+
+        /// <summary>
+        /// Get Product Entity
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public ProductModel GetModel(int Id)
+        {
+            var sql = "select * from " + Constants.DBPrefix + "productmodel where Id = @0"; 
+            AddParam("Id", Id);
+            return GetRecord(sql);
+        }
+
+        /// <summary>
+        /// Check exists
+        /// </summary>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="costPrice"></param>
+/// <param name="sellPrice"></param>
+/// <param name="purchaseDate"></param>
+/// <param name="productStatus"></param>
+/// 
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public bool ItemExists(string name = "",string code = "",decimal costPrice = 0,decimal sellPrice = 0,DateTime? purchaseDate = null,int productStatus = 0, int Id = 0)
+        {
+            var check = Search(name,code,costPrice,sellPrice,purchaseDate,productStatus);
+            if (Id > 0)
+            {
+                check = check.Where(x => x.Id != Id);
+            }
+            return check.Any();
+        }
+
+        /// <summary>
+        /// check exists
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public bool ItemExists(ProductModel model, int Id = 0)
+        {
+            var check = Search(model.Name,model.Code,model.CostPrice,model.SellPrice,model.PurchaseDate,model.ProductStatus);
+            if (Id > 0)
+            {
+                check = check.Where(x => x.Id != Id);
+            }
+            return check.Any();
+        }
+    }
+
+-------------------------------------------------
+
+REPOSITORY SERVICE
+
+        ProductRepository Products { get; }
+
+        private ProductRepository _products;
+        public ProductRepository Products { get { if (_products == null) { _products = new ProductRepository(_context); } return _products; } }
+
+
+-------------------------------------------------
+
+SERVICE
+
+
+        /// <summary>
+        /// Product Service
+        /// </summary>
+        public partial class ProductService : BaseService<Product, ProductModel, ProductForm, int>
+        {
+
+        }
+
+
+        /// <summary>
+        /// Product Service
+        /// </summary>
+        public partial class ProductService : BaseService<Product, ProductModel, ProductForm, int>
+        {
+            /// <summary>
+            /// IQueryable Product Entity Search
+            /// </summary>
+            /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="costPrice"></param>
+/// <param name="sellPrice"></param>
+/// <param name="purchaseDate"></param>
+/// <param name="productStatus"></param>
+/// <returns></returns>
+            public IQueryable<Product> Search(string name = "",string code = "",decimal costPrice = 0,decimal sellPrice = 0,DateTime? purchaseDate = null,int productStatus = 0)
+            {
+                return DataModule.Products.Search(name,code,costPrice,sellPrice,purchaseDate,productStatus);
+            }
+            
+
+            /// <summary>
+            /// IEnumerable Product Model Search
+            /// </summary>
+            /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="costPrice"></param>
+/// <param name="sellPrice"></param>
+/// <param name="purchaseDate"></param>
+/// <param name="productStatus"></param>
+/// <returns></returns>
+            public IEnumerable<ProductModel> SearchModel(string name = "",string code = "",decimal costPrice = 0,decimal sellPrice = 0,DateTime? purchaseDate = null,int productStatus = 0)
+            {
+                return DataModule.Products.Search(name,code,costPrice,sellPrice,purchaseDate,productStatus)
+                    .Select(FactoryModule.Products.CreateModel);
+            }
+
+            
+            /// <summary>
+            /// Paged Product Model Search
+            /// </summary>
+            /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="costPrice"></param>
+/// <param name="sellPrice"></param>
+/// <param name="purchaseDate"></param>
+/// <param name="productStatus"></param>
+/// <param name="page"></param>
+            ///<param name="pageSize"></param>
+            ///<param name="sort"></param>
+            /// <returns></returns>
+            public Page<ProductModel> SearchView(string name = "",string code = "",decimal costPrice = 0,decimal sellPrice = 0,DateTime? purchaseDate = null,int productStatus = 0,
+                long page = 1,long pageSize = 10, string sort = "")
+            {
+                return DataModule.Products.SearchView(name,code,costPrice,sellPrice,purchaseDate,productStatus, page, pageSize, sort);
+            }
+
+            /// <summary>
+            /// Create Product Model from Product Entity
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <returns></returns>
+            public ProductModel Create(Product entity)
+            {
+                return FactoryModule.Products.CreateModel(entity);
+            }
+
+	        /// <summary>
+            /// Create Product Model from Product Form
+            /// </summary>
+            /// <param name="form"></param>
+            /// <returns></returns>
+            public ProductModel Create(ProductForm form)
+            {
+                return FactoryModule.Products.CreateModel(form);
+            }
+
+            /// <summary>
+            /// Create Product Entity from Product Model
+            /// </summary>
+            /// <param name="model"></param>
+            /// <returns></returns>
+            public Product Create(ProductModel model)
+            {
+                return FactoryModule.Products.CreateEntity(model);
+            }
+
+            /// <summary>
+            /// Check Uniqueness of Product before creation
+            /// </summary>
+            /// <param name="model"></param>
+            /// <returns></returns>
+            public bool CreateExists(ProductModel model)
+            {
+                return DataModule.Products.ItemExists(model);
+            }
+
+            /// <summary>
+            /// Delete Product
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <returns></returns>
+            public int Delete(Product entity)
+            {
+                return DataModule.Products.Delete(entity);
+            }
+
+            /// <summary>
+            /// Get Product Entity
+            /// </summary>
+            /// <param name="id"></param>
+            /// <returns></returns>
+            public Product Get(int id)
+            {
+                return DataModule.Products.Get(id);
+            }
+
+
+
+            /// <summary>
+            /// Get Product Model
+            /// </summary>
+            /// <param name="id"></param>
+            /// <returns></returns>
+            public ProductModel GetModel(int id)
+            { 
+                return DataModule.Products.GetModel(id);
+            }
+
+            /// <summary>
+            /// Insert new Product to DB
+            /// </summary>
+            /// <param name="model"></param>
+            /// <param name="check"></param>
+            /// <returns></returns>
+            public ProductModel Insert(ProductModel model, bool check = true)
+            {
+                if (check)
+                {
+                    var routeSearch = DataModule.Products.ItemExists(model);
+                    if (routeSearch)
+                    {
+                        throw new Exception("Product Name already exists");
+                    }
+                }
+                var entity = FactoryModule.Products.CreateEntity(model);
+                entity.RecordStatus = Core.Domain.Enum.RecordStatus.Active;
+                DataModule.Products.Insert(entity);
+                return FactoryModule.Products.CreateModel(entity);
+            }
+
+            /// <summary>
+            /// Update a Product Entity with a Product Model with selected fields
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <param name="model"></param>
+            /// <param name="fields"></param>
+            /// <returns></returns>
+            public Product Patch(Product entity, ProductModel model, string fields)
+            {
+                return FactoryModule.Products.Patch(entity, model, fields);
+            }
+
+            /// <summary>
+            /// Update Product, with Patch Options Optional
+            /// </summary>
+            /// <param name="entity"></param>
+            /// <param name="model"></param>
+            /// <param name="fields"></param>
+            /// <returns></returns>
+            public ProductModel Update(Product entity, ProductModel model = null, string fields = "")
+            {
+                if (model != null)
+                {
+                    entity = Patch(entity, model, fields);
+                }
+                return FactoryModule.Products.CreateModel(DataModule.Products.Update(entity));
+            }
+
+            /// <summary>
+            /// Check Uniqueness of Product before update
+            /// </summary>
+            /// <param name="model"></param>
+            /// <returns></returns>
+            public bool UpdateExists(ProductModel model)
+            {
+                return DataModule.Products.ItemExists(model, model.Id);
+            }
+
+    }
+
+-------------------------------------------------
+
+SERVICE MODULE
+
+        ProductService ProductService { get; }
+
+        private ProductService _product;
+
+        /// <summary>
+        /// Product Service Module
+        /// </summary>
+        public ProductService ProductService { get { if (_product == null) { _product = new ProductService(); } return _product; } }
+ 
+
+-------------------------------------------------
+
+API CONTROLLER
+
+
+    /// <summary>
+    /// Products CRUD
+    /// </summary>
+    [RoutePrefix("api/Products")]
+    public class ProductsController : BaseApiController
+    {
+        /// <summary>
+        /// Search, Page, filter and Shaped Products
+        /// </summary>
+        /// <param name="sort"></param>
+        /// <param name="name"></param>
+/// <param name="code"></param>
+/// <param name="costPrice"></param>
+/// <param name="sellPrice"></param>
+/// <param name="purchaseDate"></param>
+/// <param name="productStatus"></param>
+/// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="fields"></param>
+        /// <param name="draw"></param>
+        /// <returns></returns>
+        [ResponseType(typeof(IEnumerable<ProductModel>))]
+        [Route("Search", Name = "ProductApi")]
+        [HttpGet]
+        public IHttpActionResult Get(string sort = "id", string name = "",string code = "",decimal costPrice = 0,decimal sellPrice = 0,DateTime? purchaseDate = null,int productStatus = 0, long page = 1, long pageSize = 10, string fields= "", int draw = 1)
+        {  
+            try
+            {
+                var items = Logic.ProductService.SearchView(name,code,costPrice,sellPrice,purchaseDate,productStatus,page, pageSize, sort);
+                
+                if (page > items.TotalPages) page = items.TotalPages;
+                var jo = new JObjectHelper(); 
+                jo.Add("name", name);
+jo.Add("code", code);
+jo.Add("costPrice", costPrice);
+jo.Add("sellPrice", sellPrice);
+jo.Add("purchaseDate", purchaseDate);
+jo.Add("productStatus", productStatus);
+
+                jo.Add("fields", fields); 
+                jo.Add("sort", sort);
+                var urlHelper = new UrlHelper(Request);
+                var linkBuilder = new PageLinkBuilder(urlHelper, "ProductApi", jo, page, pageSize, items.TotalItems, draw); 
+                AddHeader("X-Pagination", linkBuilder.PaginationHeader);
+                var dto = new List<ProductModel>();
+                if (items.TotalItems <= 0) return Ok(dto); 
+                var dtos = items.Items.ShapeList(fields);
+                return Ok(dtos);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        /// <summary>
+        /// Get Product by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Detail")]
+        [ResponseType(typeof(ProductModel))]
+        public IHttpActionResult Get(int id)
+        {
+            try
+            {
+                var item = Logic.ProductService.GetModel(id);
+                if (item == null)
+                {
+                    return NotFound();
+                }
+                return Ok(item);
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+         /// <summary>
+        /// Add Product
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [Route("Create")]
+        [HttpPost]
+        [ResponseType(typeof(ProductModel))]
+        public IHttpActionResult Create(ProductForm form)
+        {
+            try
+            {
+                var model = Logic.ProductService.Create(form);
+                var check = Logic.ProductService.CreateExists(model);
+                if (check)
+                {
+                    return BadRequest("Product already exists");
+                }
+                var dto = Logic.ProductService.Insert(model);
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+                /// <summary>
+        /// Update Product
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [Route("Update")]
+        [HttpPost]
+        [ResponseType(typeof(ProductModel))]
+        public IHttpActionResult Update(int id, ProductForm form)
+        {
+            try
+            {
+                var model = Logic.ProductService.Create(form);
+                if (id != model.Id)
+                    return BadRequest("Route Parameter does mot match model ID"); 
+                var found = Logic.ProductService.Get(id);
+                if (found == null)
+                    return NotFound(); 
+                var check = Logic.ProductService.UpdateExists(model); 
+                if (Logic.ProductService.UpdateExists(model))
+                    return BadRequest("Product configuration already exists");
+                var dto = Logic.ProductService.Update(found, model,
+                    "Name,Code,CostPrice,SellPrice,PurchaseDate,ProductStatus,RecordStatus");
+                return Ok(dto);
+            } 
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Delete Product
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Route("Delete")]
+        [HttpPost]
+        [ResponseType(typeof(ProductModel))]
+        public IHttpActionResult Delete(int id)
+        {
+            try
+            {
+                var found = Logic.ProductService.Get(id);
+                if (found == null)
+                    return NotFound();
+                Logic.ProductService.Delete(found); 
+                return Content(HttpStatusCode.NoContent,found);
+            } 
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return BadRequest(ex.Message);
+            }
+        } 
+    }
+
+
+-------------------------------------------------
+
+API Library Service
+public class ProductAPI : BaseServiceAPI<ProductModel, int>
+    { 
+        public ProductAPI()
+        {
+            _api = "/api/Products";
+        }
+ 
+        public async Task<ApiResponse<IEnumerable<ProductModel>>> Search(string name = "",string code = "",decimal costPrice = 0,decimal sellPrice = 0,DateTime? purchaseDate = null,int productStatus = 0,
+            string sort = "id",int page = 1, int pageSize = 10, string fields = "", bool extended = false)
+        {
+            var jo = new JObjectHelper(sort, page, pageSize, fields, extended);
+            jo.Add("name", name);
+jo.Add("code", code);
+jo.Add("costPrice", costPrice);
+jo.Add("sellPrice", sellPrice);
+jo.Add("purchaseDate", purchaseDate);
+jo.Add("productStatus", productStatus);
+             
+            Route("Search");
+            return await Search<ProductModel>(jo); 
+        }        
+    }
+
+-------------------------------------------------
+
+API Library MODULE
+private ProductAPI _product;
+
+        /// <summary>
+        /// Product API Module
+        /// </summary>
+        public ProductAPI ProductAPI { get { if (_product == null) { _product = new ProductAPI(); } return _product; } }
+
+
+-------------------------------------------------
+
+MVC CONTROLLER
+     
+    public class ProductsController : BaseController
+    {
+        
+        //[CustomAuth(Permissions = "ProductsSearch")]
+        public ActionResult Index(string name = "",string code = "",decimal costPrice = 0,decimal sellPrice = 0,DateTime? purchaseDate = null,int productStatus = 0, string act="")
+        {
+            if (act.ToLower() == "export")
+            {
+                var data = Logic.ProductService.SearchView(name,code,costPrice,sellPrice,purchaseDate,productStatus,page: 0);
+                Download(data); 
+            }
+            return View();
+        }
+
+    }
+
+
+-------------------------------------------------
+
+SAVE VIEW
+
+            
+
+-------------------------------------------------
+
+INDEX VIEW
+@{
+    ViewBag.Title = "Products";
+    ViewBag.Header = "Products";
+    string sim = Bootes.Core.Common.Constants.API_URL;
+    
+}
+@section styles{
+
+
+}
+
+<div class="spp" data-perm="ProductsSearch"></div>
+ 
+   
+ 
+
+  <div class="row" id="filterView"> 
+            <div class="col-md-12">
+                <div class="collapse" id="collapseExample">
+
+                    <form action="" class="form p-3 mb-0 bg-light" method="get">
+                        <div class="row">
+
+                            <div class="form-group col-sm-12 col-md-3">
+    <small>Name</small>
+    <input type="text" name="name" id="name" value="" placeholder="Name" class="form-control form-control-sm" v-model="formsearch.Name" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>Code</small>
+    <input type="text" name="code" id="code" value="" placeholder="Code" class="form-control form-control-sm" v-model="formsearch.Code" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>CostPrice</small>
+    <input type="text" name="costPrice" id="costPrice" value="" placeholder="CostPrice" class="form-control form-control-sm" v-model="formsearch.CostPrice" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>SellPrice</small>
+    <input type="text" name="sellPrice" id="sellPrice" value="" placeholder="SellPrice" class="form-control form-control-sm" v-model="formsearch.SellPrice" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>PurchaseDate</small>
+    <input type="text" name="purchaseDate" id="purchaseDate" value="" placeholder="PurchaseDate" class="form-control form-control-sm" v-model="formsearch.PurchaseDate" >
+</div>
+<div class="form-group col-sm-12 col-md-3">
+    <small>ProductStatus</small>
+    <input type="text" name="productStatus" id="productStatus" value="" placeholder="ProductStatus" class="form-control form-control-sm" v-model="formsearch.ProductStatus" >
+</div>
+ 
+                            
+                            <div class="form-group col-sm-12 text-right mb-0">
+                                <button class="btn btn-sm btn-warning" type="reset" value="Cancel">
+                                    Cancel
+                                </button>
+                                <button class="btn btn-sm btn-primary" type="submit" name="act">
+                                    Search
+                                </button>
+                                <button class="btn btn-sm btn-dark" type="submit" name="act" value="export">
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-right">
+                    <a class="btn btn-light btn-sm" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        Filter/Export
+                        <i class="fa fa-search"></i>
+                    </a>
+                    <a href="javascript:;" onclick="FormUtil.FormCreate()" role="button" class="btn btn-light btn-sm">
+                        New
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </div>
+                <table id="grid" class="table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="javascript:;" onclick="FormUtil.FormCreate()">
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </th>
+                             <th>Name</th> 
+ <th>Code</th> 
+ <th>CostPrice</th> 
+ <th>SellPrice</th> 
+ <th>PurchaseDate</th> 
+ <th>ProductStatus</th> 
+ <th>Status</th> 
+ <th>Created</th> 
+ <th>Updated</th> 
+
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <div id="appView">
+        <!-- Modal -->
+            <div class="modal fade" id="crudModal" tabindex="-1" role="dialog" aria-labelledby="crudModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="crudModallLabel">{{ frmTitle }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <form method="post" @@submit.prevent="submit">
+
+                                        <input data-val="true" data-val-number="The field Id must be a number." data-val-required="The Id field is required." id="Id"
+                                            name="Id" type="hidden" value="0" v-model="form.Id" />
+                                        <div class="white-box">
+                                            <div class="row">
+                                            <div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="Name">Name</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The Name field is required." id="Name"
+        name="Name" type="text" value="" v-model="form.Name" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="Code">Code</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The Code field is required." id="Code"
+        name="Code" type="text" value="" v-model="form.Code" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="CostPrice">CostPrice</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The CostPrice field is required." id="CostPrice"
+        name="CostPrice" type="text" value="" v-model="form.CostPrice" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="SellPrice">SellPrice</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The SellPrice field is required." id="SellPrice"
+        name="SellPrice" type="text" value="" v-model="form.SellPrice" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="PurchaseDate">PurchaseDate</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The PurchaseDate field is required." id="PurchaseDate"
+        name="PurchaseDate" type="text" value="" v-model="form.PurchaseDate" />
+</div>
+<div class="form-group col-sm-12 col-md-4">
+    <label class="req control-label" for="ProductStatus">ProductStatus</label>
+    <input class="form-control text-box single-line" data-val="true" data-val-required="The ProductStatus field is required." id="ProductStatus"
+        name="ProductStatus" type="text" value="" v-model="form.ProductStatus" />
+</div>
+
+                                                  
+                                                <div class="form-group col-sm-6">
+
+                                                    <input checked="checked" data-val="true" data-val-required="The RecordStatus field is required." id="RecordStatus" name="RecordStatus"
+                                                        type="radio" value="0"  v-model="form.RecordStatus" />
+                                                    <label>Pending</label>
+                                                    <input id="RecordStatus" name="RecordStatus" type="radio" value="1" v-model="form.RecordStatus" />
+                                                    <label>Active</label>
+                                                    <input id="RecordStatus" name="RecordStatus" type="radio" value="2" v-model="form.RecordStatus" />
+                                                    <label>Disabled</label>
+                                                </div>
+                                                <div class="form-group col-sm-6 text-right">
+                                                    <button type="reset" class="btn btn-warning btn-sm">Cancel</button>
+                                                    <input type="submit" value="Submit" class="btn btn-primary btn-sm" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="detailModalLabel">{{ frmTitle }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <dl class="row">
+ 
+                                
+                                <dt class="col-sm-3">Name</dt>
+                                <dd class="col-sm-9">{{ form.Name }}</dd>
+
+                                <dt class="col-sm-3">Code</dt>
+                                <dd class="col-sm-9">{{ form.Code }}</dd>
+
+                                <dt class="col-sm-3">CostPrice</dt>
+                                <dd class="col-sm-9">{{ form.CostPrice }}</dd>
+
+                                <dt class="col-sm-3">SellPrice</dt>
+                                <dd class="col-sm-9">{{ form.SellPrice }}</dd>
+
+                                <dt class="col-sm-3">PurchaseDate</dt>
+                                <dd class="col-sm-9">{{ form.PurchaseDate }}</dd>
+
+                                <dt class="col-sm-3">ProductStatus</dt>
+                                <dd class="col-sm-9">{{ form.ProductStatus }}</dd>
+ 
+
+
+                                
+                                <dt class="col-sm-3">Status</dt>
+                                <dd class="col-sm-9">{{ form.RecordStatusText }}</dd>
+                                
+                                <dt class="col-sm-3">Created</dt>
+                                <dd class="col-sm-9">{{ form.CreatedAtText }}</dd>
+                                
+                                <dt class="col-sm-3">Updated</dt>
+                                <dd class="col-sm-9">{{ form.UpdatedAtText }}</dd>
+                            </dl> 
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger btn-sm" v-on:click="deleteItem">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+@section scripts
+{
+  <script type="text/javascript">
+
+        $(document).ready(function () {
+            
+            var _form = {
+                Id: 0,
+Name: "",
+Code: "",
+CostPrice: "",
+SellPrice: "",
+PurchaseDate: "",
+ProductStatus: ""
+            };
+
+            var _formsearch = {
+                Id: 0,
+Name: "",
+Code: "",
+CostPrice: "",
+SellPrice: "",
+PurchaseDate: "",
+ProductStatus: ""
+            };
+            var _columns = [
+                {
+                    "data": "Id",
+                    "render": function (data, type, row, meta) {
+                        return '<a href="javascript:;" onclick="FormUtil.FormUpdate(' + data + ')"><i class="fa fa-edit"></i></a> <a href="javascript:;" onclick="FormUtil.FormDetail(' + data + ')"><i class="fa fa-external-link-alt"></i></a>';
+                    }
+                },
+                
+{"data": "Name" },
+{"data": "Code" },
+{"data": "CostPrice" },
+{"data": "SellPrice" },
+{"data": "PurchaseDate" },
+{"data": "ProductStatus" },
+{"data": "RecordStatusText" },
+{"data": "CreatedAtText" },
+{"data": "UpdatedAtText" }
+            ];
+
+            var _list = {
+                id: 0
+            };
+
+            FormUtil.Init({
+                entity: 'Products',
+                url: '@sim',
+                form: _form,
+                formsearch: _formsearch,
+                columns: _columns,
+                table: 'grid',
+                createModal: 'crudModal',
+                updateModal: 'crudModal',
+                detailModal: 'detailModal',
+                list: _list
+            });
+        });
+    </script>
+}
+
+
+-------------------------------------------------
+
