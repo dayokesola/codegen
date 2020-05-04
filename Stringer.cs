@@ -88,7 +88,7 @@ namespace nboni.CodeGen
         }
 
 
-        public static string TableParams(Dictionary<string, string> _fields, string idType)
+        public static string TableParams(Dictionary<string, string> _fields, string idType, string db)
         {
             var txt = "";
 
@@ -102,66 +102,216 @@ namespace nboni.CodeGen
                 fields.Add(_f.Key, _f.Value);
             }
 
-            foreach (var field in fields)
+            if (db == "SQLSERVER")
             {
-                var def = "";
-                var fv = field.Value;
-                switch (field.Value)
+                foreach (var field in fields)
                 {
-                    case "string":
-                        def = "[nvarchar](64) NULL";
-                        break;
-                    case "Guid":
-                        def = "uuid"; 
-                        break;
-                    case "small":
-                        def = "smallint";
-                        break;
-                    case "int":
-                        def = "int NOT NULL";
-                        break;
-                    case "int?":
-                        def = "int NULL";
-                        break;
-                    case "decimal":
-                        def = "decimal(18,2) NOT NULL";
-                        break;
-                    case "long":
-                        def = "bigint NOT NULL";
-                        break;
-                    case "long?":
-                        def = "bigint NULL";
-                        break;
-                    case "double":
-                        def = "float NOT NULL";
-                        break;
-                    case "bool": 
-                        def = "bit NOT NULL";
-                        break;
-                    case "DateTime":
-                        def = "datetime NOT NULL"; 
-                        break;
-                    case "DateTime?":
-                        def = "datetime NULL";
-                        break;
-
-                    default:
-                        def = field.Value; 
-                        break;
-                }
-
-                if (field.Key.ToLower() == "id")
-                {
-                    if (field.Value.ToLower() == "int" || field.Value.ToLower() == "long" || field.Value.ToLower() == "small")
+                    var def = "";
+                    var fv = field.Value;
+                    switch (field.Value)
                     {
+                        case "string":
+                            def = "[nvarchar](64) NULL";
+                            break;
+                        case "Guid":
+                            def = "uuid";
+                            break;
+                        case "short":
+                            def = "smallint";
+                            break;
+                        case "int":
+                            def = "int";
+                            break;
+                        case "int?":
+                            def = "int NULL";
+                            break;
+                        case "decimal":
+                            def = "decimal(18,2) NOT NULL";
+                            break;
+                        case "long":
+                            def = "bigint";
+                            break;
+                        case "long?":
+                            def = "bigint NULL";
+                            break;
+                        case "double":
+                            def = "float NOT NULL";
+                            break;
+                        case "bool":
+                            def = "bit NOT NULL";
+                            break;
+                        case "DateTime":
+                            def = "datetime NOT NULL";
+                            break;
+                        case "DateTime?":
+                            def = "datetime NULL";
+                            break;
 
-                        def += " IDENTITY(1,1)";
-                         
+                        default:
+                            def = field.Value;
+                            break;
                     }
-                }
 
-                txt += "'" + field.Key + "' " + def + "," + Environment.NewLine;
+                    if (field.Key.ToLower() == "id")
+                    {
+                        if (field.Value.ToLower() == "int" || field.Value.ToLower() == "long" || field.Value.ToLower() == "short")
+                        {
+
+                            def += " NOT NULL IDENTITY(1,1)";
+
+                        }
+                    }
+
+                    txt += "'" + field.Key + "' " + def + "," + Environment.NewLine;
+                }
             }
+
+            if (db == "MYSQL")
+            {
+                foreach (var field in fields)
+                {
+                    var def = "";
+                    var fv = field.Value;
+                    switch (field.Value)
+                    {
+                        case "string":
+                            def = "[nvarchar](64) NULL";
+                            break;
+                        case "Guid":
+                            def = "uuid";
+                            break;
+                        case "short":
+                            def = "smallint";
+                            break;
+                        case "int":
+                            def = "int";
+                            break;
+                        case "int?":
+                            def = "int NULL";
+                            break;
+                        case "decimal":
+                            def = "decimal(18,2) NOT NULL";
+                            break;
+                        case "long":
+                            def = "bigint";
+                            break;
+                        case "long?":
+                            def = "bigint NULL";
+                            break;
+                        case "double":
+                            def = "float NOT NULL";
+                            break;
+                        case "bool":
+                            def = "bit NOT NULL";
+                            break;
+                        case "DateTime":
+                            def = "datetime NOT NULL";
+                            break;
+                        case "DateTime?":
+                            def = "datetime NULL";
+                            break;
+
+                        default:
+                            def = field.Value;
+                            break;
+                    }
+
+                    if (field.Key.ToLower() == "id")
+                    {
+                        if (field.Value.ToLower() == "int" || field.Value.ToLower() == "long" || field.Value.ToLower() == "short")
+                        {
+
+                            def += " NOT NULL AUTO_INCREMENT";
+
+                        }
+                    }
+
+                    txt += "'" + field.Key + "' " + def + "," + Environment.NewLine;
+                }
+            }
+
+            if (db == "POSTGRES")
+            {
+                foreach (var field in fields)
+                {
+                    var def = "";
+                    var fv = field.Value;
+                    switch (field.Value)
+                    {
+                        case "string":
+                            def = "character varying(128)";
+                            break;
+                        case "Guid":
+                            def = "uuid";
+                            break;
+                        case "short":
+                            def = "smallint";
+                            break;
+                        case "int":
+                            def = "integer";
+                            break;
+                        case "int?":
+                            def = "integerv NULL";
+                            break;
+                        case "decimal":
+                            def = "decimal(18,2) NOT NULL";
+                            break;
+                        case "long":
+                            def = "bigint";
+                            break;
+                        case "long?":
+                            def = "bigint NULL";
+                            break;
+                        case "double":
+                            def = "double precision";
+                            break;
+                        case "bool":
+                            def = "boolean";
+                            break;
+                        case "bool?":
+                            def = "boolean NULL";
+                            break;
+                        case "DateTime":
+                            def = "timestamp without time zone";
+                            break;
+                        case "DateTime?":
+                            def = "timestamp without time zone NULL";
+                            break;
+
+                        default:
+                            def = field.Value;
+                            break;
+                    }
+
+                    if (field.Key.ToLower() == "id")
+                    {
+                        if (field.Value.ToLower() == "int")
+                        {
+
+                            def = "serial NOT NULL";
+
+                        }
+
+                        if (field.Value.ToLower() == "long")
+                        {
+
+                            def = "bigserial NOT NULL";
+
+                        }
+
+                        if (field.Value.ToLower() == "short")
+                        {
+
+                            def = "smallserial NOT NULL";
+
+                        }
+                    }
+
+                    txt += "" + field.Key.ToLower() + " " + def + "," + Environment.NewLine;
+                }
+            }
+
+
             return txt;
         }
 
@@ -170,7 +320,7 @@ namespace nboni.CodeGen
             var txt = "";
             foreach (var field in fields)
             {
-                txt += field.Key + " = obj." + field.Key + Environment.NewLine;
+                txt += field.Key + " = obj." + field.Key + "," + Environment.NewLine;
             } 
             return txt;
         }
@@ -215,7 +365,7 @@ namespace nboni.CodeGen
                 txt += dot + "." + field.Key + ",";
             }
             char[] trim = { ',' };
-            return txt.Trim(trim);
+            return txt.Trim(trim).ToLower();
         }
 
 

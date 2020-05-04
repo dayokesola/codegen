@@ -68,7 +68,9 @@ namespace nboni.CodeGen
             txt = txt.Replace("%P%", Stringer.Params(fields));
             txt = txt.Replace("%V%", Stringer.Variables(fields));
             txt = txt.Replace("%W%", Stringer.Variables(fields, "x"));
-            txt = txt.Replace("%WT%", Stringer.TableParams(fields, v3));
+            txt = txt.Replace("%WT1%", Stringer.TableParams(fields, v3, "SQLSERVER"));
+            txt = txt.Replace("%WT2%", Stringer.TableParams(fields, v3, "MYSQL"));
+            txt = txt.Replace("%WT3%", Stringer.TableParams(fields, v3, "POSTGRES"));
             txt = txt.Replace("%U%", Stringer.UpperVariables(fields));
             txt = txt.Replace("%M%", Stringer.ModelVariables(fields));
             txt = txt.Replace("%Q%", Stringer.QueryString(fields));
