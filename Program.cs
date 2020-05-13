@@ -5,9 +5,10 @@ namespace nboni.CodeGen
 {
     class Program
     {
+        public static string mycase;
         static void Main(string[] args)
         {
-            var basepath = args[0] + ".txt";
+            var basepath = "output\\" + args[0] + ".txt";
             var formats = "Formats\\";
 
             //var v0 = "User";
@@ -16,7 +17,10 @@ namespace nboni.CodeGen
             //var v3 = "UserName:string; FirstName: string; LastName: string; Subject: string;";
             var v4 = "";  //sub app
             try { v4 = args[4]; } catch {  }
-            
+
+            mycase = "upper";  //sub app
+            try { mycase = args[5]; } catch { mycase = "upper"; }
+
 
 
             var code = new Codular(basepath, args[0], args[1], args[2], args[3], formats, v4);

@@ -15,6 +15,7 @@ namespace nboni.CodeGen
         private string v3;
         private string v4;
         private string v5;
+        private string v6;
         private string formats;
         private StringBuilder code;
         private Dictionary<string, string> fields;
@@ -27,7 +28,7 @@ namespace nboni.CodeGen
             this.v2 = v2;
             this.v3 = v3;
             this.v4 = v4;
-            this.v5 = v5;
+            this.v5 = v5; 
             this.formats = _formats;
             fields = Stringer.Transform(v4);
             
