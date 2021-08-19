@@ -166,8 +166,11 @@ namespace nboni.CodeGen
             return txt.Trim(trim);
         }
 
-        public static string Properties(Dictionary<string, string> fields)
+        public static string Properties(Dictionary<string, string> fields, int mode = 1)
         {
+            //mode 2 is model
+            //add a string for obkect
+
             var txt = "";
             foreach (var field in fields)
             {
@@ -175,6 +178,30 @@ namespace nboni.CodeGen
             /// 
             /// </summary>";
                 txt += Environment.NewLine + "public " + field.Value + " " + field.Key + " { get; set; }" + Environment.NewLine;
+
+                if (mode == 2)
+                {
+                    if (field.Key.EndsWith("Id"))
+                    {
+                        var b = field.Key.Substring(0, field.Key.Length - 2) + "Name";
+
+                        txt += @"/// <summary>
+            /// 
+            /// </summary>";
+                        txt += Environment.NewLine + "public string " + b + " { get; set; }" + Environment.NewLine;
+                    }
+
+
+                    if (field.Key.EndsWith("id"))
+                    {
+                        var b = field.Key.Substring(0, field.Key.Length - 2) + "name";
+
+                        txt += @"/// <summary>
+            /// 
+            /// </summary>";
+                        txt += Environment.NewLine + "public string " + b + " { get; set; }" + Environment.NewLine;
+                    }
+                }
             }
             char[] trim = { ',' };
             return txt.Trim(trim);

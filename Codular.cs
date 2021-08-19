@@ -80,6 +80,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%FG%", Stringer.FactorMapper(fields));
             txt = txt.Replace("%DV%", Stringer.DetailView(fields, formats));
             txt = txt.Replace("%C%", Stringer.Properties(fields));
+            txt = txt.Replace("%C2%", Stringer.Properties(fields, 2));
             txt = txt.Replace("%JM%", Stringer.JSModel(fields));
             txt = txt.Replace("%TC%", Stringer.TableColumns(fields));
             txt = txt.Replace("%J%", Stringer.JObjectHelper(fields));
