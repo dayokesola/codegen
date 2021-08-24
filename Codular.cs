@@ -35,7 +35,7 @@ namespace nboni.CodeGen
         }
 
        
-        internal void Generate()
+        internal string Generate()
         {
             GenerateEntity();
             GenerateModel();
@@ -55,6 +55,8 @@ namespace nboni.CodeGen
             GenerateSaveView();
             GenerateIndexView();
             File.WriteAllText(basepath, code.ToString());
+
+            return code.ToString();
         }
 
         private void Paint(string txt, string title = "")
@@ -69,6 +71,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%P%", Stringer.Params(fields));
             txt = txt.Replace("%V%", Stringer.Variables(fields));
             txt = txt.Replace("%W%", Stringer.Variables(fields, "x"));
+            txt = txt.Replace("%QJ%", Stringer.QueryJoins(fields));
             txt = txt.Replace("%WT1%", Stringer.TableParams(fields, v3, "SQLSERVER"));
             txt = txt.Replace("%WT2%", Stringer.TableParams(fields, v3, "MYSQL"));
             txt = txt.Replace("%WT3%", Stringer.TableParams(fields, v3, "POSTGRES"));
@@ -89,6 +92,8 @@ namespace nboni.CodeGen
             txt = txt.Replace("%G%", Stringer.Paginator(fields));
             txt = txt.Replace("%TR%", Stringer.TableHeader(fields));
             txt = txt.Replace("%TD%", Stringer.TableRow(fields));
+            txt = txt.Replace("%MM1%", Stringer.MigrationMapper(fields));
+            txt = txt.Replace("%MM2%", Stringer.MigrationMapper(fields, 2));
             txt = txt.Replace("%SR%", Stringer.SearchFields(fields, formats));
             txt = txt.Replace("%S%", Stringer.SaveFields(fields, formats));
             txt = txt.Replace("'", "\"");
