@@ -23,10 +23,14 @@ namespace nboni.CodeGen
             var genfile = "no";
             try { genfile = args[6]; } catch { genfile = "no"; }
 
+
+            var workspace = v4;
+            try { workspace = args[7]; } catch { workspace = v4; }
+
             var basepath = "output\\" + args[4] + "." + args[0] + ".txt";
             var formats = "Formats\\";
 
-            var code = new Codular(basepath, args[0], args[1], args[2], args[3], formats, v4);
+            var code = new Codular(basepath, args[0], args[1], args[2], args[3], formats, v4, workspace);
             var gend = code.Generate();
             Console.WriteLine("Done");
 

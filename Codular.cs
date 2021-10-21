@@ -17,10 +17,11 @@ namespace nboni.CodeGen
         private string v5;
         private string v6;
         private string formats;
+        private string workspace;
         private StringBuilder code;
         private Dictionary<string, string> fields;
 
-        public Codular(string basepath, string v1, string v2, string v3 = "long", string v4 = "", string _formats = "", string v5 = "")
+        public Codular(string basepath, string v1, string v2, string v3 = "long", string v4 = "", string _formats = "", string v5 = "", string workspace ="")
         {
             code = new StringBuilder();
             this.basepath = basepath;
@@ -29,6 +30,7 @@ namespace nboni.CodeGen
             this.v3 = v3;
             this.v4 = v4;
             this.v5 = v5; 
+            this.workspace = workspace;
             this.formats = _formats;
             fields = Stringer.Transform(v4);
             
@@ -68,6 +70,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%z%", v5.ToLower());
             txt = txt.Replace("%h%", v1.ToLower());
             txt = txt.Replace("%n%", v2.ToLower());
+            txt = txt.Replace("%Y%", workspace);
             txt = txt.Replace("%P%", Stringer.Params(fields));
             txt = txt.Replace("%V%", Stringer.Variables(fields));
             txt = txt.Replace("%W%", Stringer.Variables(fields, "x"));

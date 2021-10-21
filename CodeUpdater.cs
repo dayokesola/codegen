@@ -55,31 +55,23 @@ namespace nboni.CodeGen
             dir = dir.Replace("%Z%", Module); 
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
-            //search for directory
-
+            fle = fle.Replace("%Z%", Module);
+            //search for directoryModule
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
-
             if(!File.Exists(dir + fle))
             {
                 return;
             }
-
             //if snippet exist return
-            
-
             var codefile = File.ReadAllText(dir + fle);
-
             if (codefile.Contains(snip)) return;
-
-
             codefile = codefile.Replace("///" + snippet.code, snip + "///" + snippet.code);
-
+            codefile = codefile.Replace("//#" + snippet.code, snip + "//#" + snippet.code);
             //write file back
             File.WriteAllText(dir + fle, codefile);
-
         }
 
         /// <summary>
@@ -96,6 +88,7 @@ namespace nboni.CodeGen
 
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
+            fle = fle.Replace("%Z%", Module);
 
             if (!Directory.Exists(dir))
             {

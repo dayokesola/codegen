@@ -12,8 +12,8 @@ namespace nboni.CodeGen
     {
         public static string DetailView(Dictionary<string, string> fields, string formats)
         {
-            var temp1 = @"      <dt class='col-sm-3'>%K%</dt>
-                                <dd class='col-sm-9'>{{ form.%K% }}</dd>";
+            var temp1 = @"      <dt class='col-sm-4'>%K%</dt>
+                                <dd class='col-sm-8'>{{ form.%K% }}</dd>";
             try
             {
                 temp1 = File.ReadAllText(formats + "detailview.ini");
@@ -26,7 +26,14 @@ namespace nboni.CodeGen
             var txt = "";
             foreach (var field in fields)
             {
-                txt += temp1.Replace("%K%", field.Key) + Environment.NewLine;
+                if (Program.mycase == "lower")
+                {
+                    txt += temp1.Replace("%K%", field.Key.ToLower()) + Environment.NewLine;
+                }
+                else
+                {
+                    txt += temp1.Replace("%K%", FirstToLower(field.Key)) + Environment.NewLine;
+                }
             }
             char[] trim = { ',' };
             return txt.Trim(trim);
@@ -144,7 +151,14 @@ namespace nboni.CodeGen
             }
             foreach (var field in fields)
             {
-                txt += Environment.NewLine + field.Key + ": '',";
+                if (Program.mycase == "lower")
+                {
+                    txt += Environment.NewLine + field.Key.ToLower() + ": '',";
+                }
+                else
+                {
+                    txt += Environment.NewLine + FirstToLower(field.Key) + ": '',";
+                }
             }
             char[] trim = { ',' };
             return txt.Trim(trim);
@@ -395,7 +409,14 @@ namespace nboni.CodeGen
             var txt = "";
             foreach (var field in fields)
             {
-                txt += temp1.Replace("%K%", field.Key) + Environment.NewLine;
+                if (Program.mycase == "lower")
+                {
+                    txt += temp1.Replace("%K%", field.Key) + Environment.NewLine;
+                }
+                else
+                {
+                    txt += temp1.Replace("%K%", FirstToLower(field.Key)) + Environment.NewLine;
+                }
             }
             char[] trim = { ',' };
             return txt.Trim(trim);
@@ -426,8 +447,14 @@ namespace nboni.CodeGen
             var txt = "";
             foreach (var field in fields)
             {
-                var t = temp1.Replace("%k%", FirstToLower(field.Key));
-                t = t.Replace("%K%", field.Key) + Environment.NewLine;
+                var fk = field.Key;
+                if (Program.mycase != "lower")
+                {
+                    fk = FirstToLower(fk);
+                }
+
+                var t = temp1.Replace("%k%", FirstToLower(fk));
+                t = t.Replace("%K%", fk) + Environment.NewLine;
                 txt += t;
             }
             char[] trim = { ',' };
@@ -446,7 +473,7 @@ namespace nboni.CodeGen
                 }
                 else
                 {
-                    txt += Environment.NewLine + "{'data': '" + field.Key + "' },";
+                    txt += Environment.NewLine + "{'data': '" + FirstToLower(field.Key) + "' },";
 
                 }
 
