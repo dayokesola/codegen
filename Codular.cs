@@ -10,35 +10,42 @@ namespace nboni.CodeGen
     public class Codular
     {
         private string basepath;
-        private string v1;
-        private string v2;
-        private string v3;
-        private string v4;
-        private string v5;
-        private string v6;
+        private string classname;
+        private string classnameplural;
+        private string idtype;
+        private string fieldstext;
+        private string mycase;
+        private string genfile;
         private string formats;
+        private string module; 
         private string workspace;
         private StringBuilder code;
         private Dictionary<string, string> fields;
-
-        public Codular(string basepath, string v1, string v2, string v3 = "long", string v4 = "", string _formats = "", string v5 = "", string workspace ="")
+        internal void SetArgs(string[] args)
         {
-            code = new StringBuilder();
-            this.basepath = basepath;
-            this.v1 = v1;
-            this.v2 = v2;
-            this.v3 = v3;
-            this.v4 = v4;
-            this.v5 = v5; 
-            this.workspace = workspace;
-            this.formats = _formats;
-            fields = Stringer.Transform(v4);
-            
+            classname = args[0];
+            classnameplural = args[1];
+            idtype = args[2];
+            fieldstext = args[3];
+            module = args[4];
+            mycase = args[5];
+            genfile = args[6];
+            workspace = args[7];
+            fields = Stringer.Transform(fieldstext);
         }
 
-       
-        internal string Generate()
+        public Codular()
         {
+
+        } 
+
+       
+        internal string Generate(string _basepath, string _formats)
+        { 
+            code = new StringBuilder();
+            basepath = _basepath; 
+            formats = _formats; 
+
             GenerateEntity();
             GenerateModel();
             GenerateForm();
@@ -63,21 +70,22 @@ namespace nboni.CodeGen
 
         private void Paint(string txt, string title = "")
         {
-            txt = txt.Replace("%H%", v1);
-            txt = txt.Replace("%N%", v2);
-            txt = txt.Replace("%T%", v3);
-            txt = txt.Replace("%Z%", v5);
-            txt = txt.Replace("%z%", v5.ToLower());
-            txt = txt.Replace("%h%", v1.ToLower());
-            txt = txt.Replace("%n%", v2.ToLower());
-            txt = txt.Replace("%Y%", workspace);
+            txt = txt.Replace("%H%", classname);
+            txt = txt.Replace("%N%", classnameplural);
+            txt = txt.Replace("%T%", idtype);
+            txt = txt.Replace("%Z%", mycase);
+            txt = txt.Replace("%z%", mycase.ToLower());
+            txt = txt.Replace("%h%", classname.ToLower());
+            txt = txt.Replace("%n%", classnameplural.ToLower());
+            txt = txt.Replace("%Y%", module);
+            txt = txt.Replace("%Z1%", workspace);
             txt = txt.Replace("%P%", Stringer.Params(fields));
             txt = txt.Replace("%V%", Stringer.Variables(fields));
             txt = txt.Replace("%W%", Stringer.Variables(fields, "x"));
             txt = txt.Replace("%QJ%", Stringer.QueryJoins(fields));
-            txt = txt.Replace("%WT1%", Stringer.TableParams(fields, v3, "SQLSERVER"));
-            txt = txt.Replace("%WT2%", Stringer.TableParams(fields, v3, "MYSQL"));
-            txt = txt.Replace("%WT3%", Stringer.TableParams(fields, v3, "POSTGRES"));
+            txt = txt.Replace("%WT1%", Stringer.TableParams(fields, idtype, "SQLSERVER"));
+            txt = txt.Replace("%WT2%", Stringer.TableParams(fields, idtype, "MYSQL"));
+            txt = txt.Replace("%WT3%", Stringer.TableParams(fields, idtype, "POSTGRES"));
             txt = txt.Replace("%U%", Stringer.UpperVariables(fields));
             txt = txt.Replace("%M%", Stringer.ModelVariables(fields));
             txt = txt.Replace("%Q%", Stringer.QueryString(fields));

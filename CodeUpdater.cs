@@ -17,6 +17,7 @@ namespace nboni.CodeGen
         private string Module { get; set; }
         private string Class1 { get; set; }
         private string Class2 { get; set; } 
+        private string Area { get; set; }
 
 
         private List<string> codelines { get; set; }
@@ -36,6 +37,35 @@ namespace nboni.CodeGen
                     case "create": 
                         SnippetCreate(snippet);
                         break;
+                    case "createsafe":
+                        SnippetCreateSafe(snippet);
+                        break;
+                    case "update":
+                        SnippetUpdate(snippet);
+                        break;
+                }
+            }
+        }
+
+
+        internal void GenerateUI(string gend, string pathsfile)
+        {
+            //I need to iterate over tje settings
+            var config = File.ReadAllText(pathsfile);
+            cps = JsonConvert.DeserializeObject<CodePaths>(config);
+
+            codelines = gend.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            foreach (var snippet in cps.snippets)
+            {
+                switch (snippet.action)
+                {
+                    case "create":
+                        SnippetCreate(snippet);
+                        break;
+                    case "createsafe":
+                        SnippetCreateSafe(snippet);
+                        break;
                     case "update":
                         SnippetUpdate(snippet);
                         break;
@@ -52,10 +82,12 @@ namespace nboni.CodeGen
             var snip = SearchSnippet(snippet.code);
             if (string.IsNullOrEmpty(snip)) return;
             var dir = cps.basepath + snippet.folder;
+            dir = dir.Replace("%Z1%", Area);
             dir = dir.Replace("%Z%", Module); 
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
             fle = fle.Replace("%Z%", Module);
+            fle = fle.Replace("%Z1%", Area);
             //search for directoryModule
             if (!Directory.Exists(dir))
             {
@@ -84,11 +116,13 @@ namespace nboni.CodeGen
             if (string.IsNullOrEmpty(snip)) return;
 
             var dir = cps.basepath + snippet.folder;
+            dir = dir.Replace("%Z1%", Area);
             dir = dir.Replace("%Z%", Module);
 
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
             fle = fle.Replace("%Z%", Module);
+            fle = fle.Replace("%Z1%", Area);
 
             if (!Directory.Exists(dir))
             {
@@ -97,6 +131,32 @@ namespace nboni.CodeGen
 
             if(File.Exists(dir + fle)){
                 File.Delete(dir + fle);
+            }
+            File.WriteAllText(dir + fle, snip);
+        }
+
+        private void SnippetCreateSafe(CodeSnippet snippet)
+        {
+            var snip = SearchSnippet(snippet.code);
+            if (string.IsNullOrEmpty(snip)) return;
+
+            var dir = cps.basepath + snippet.folder;
+            dir = dir.Replace("%Z1%", Area);
+            dir = dir.Replace("%Z%", Module);
+
+            var fle = snippet.file.Replace("%H%", Class1);
+            fle = fle.Replace("%N%", Class2);
+            fle = fle.Replace("%Z%", Module);
+            fle = fle.Replace("%Z1%", Area);
+
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            if (File.Exists(dir + fle))
+            {
+                return;
             }
             File.WriteAllText(dir + fle, snip);
         }
@@ -144,6 +204,7 @@ namespace nboni.CodeGen
             Module = args[4];
             Class1 = args[0];
             Class2 = args[1];
+            Area = args[7];
         }
     }
 }
