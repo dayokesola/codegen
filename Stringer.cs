@@ -12,15 +12,16 @@ namespace nboni.CodeGen
     {
         public static string DetailView(Dictionary<string, string> fields, string formats)
         {
-            var temp1 = @"      <dt class='col-sm-4'>%K%</dt>
+            var temp0 = @"      <dt class='col-sm-4'>%K%</dt>
                                 <dd class='col-sm-8'>{{ form.%K% }}</dd>";
+            var temp1 = @"";
             try
             {
                 temp1 = File.ReadAllText(formats + "detailview.ini");
             }
             catch
             {
-
+                temp1 = temp0;
             }
 
             var txt = "";

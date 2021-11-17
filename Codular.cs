@@ -73,11 +73,11 @@ namespace nboni.CodeGen
             txt = txt.Replace("%H%", classname);
             txt = txt.Replace("%N%", classnameplural);
             txt = txt.Replace("%T%", idtype);
-            txt = txt.Replace("%Z%", mycase);
-            txt = txt.Replace("%z%", mycase.ToLower());
+            txt = txt.Replace("%Z%", module);
+            txt = txt.Replace("%z%", module.ToLower());
             txt = txt.Replace("%h%", classname.ToLower());
             txt = txt.Replace("%n%", classnameplural.ToLower());
-            txt = txt.Replace("%Y%", module);
+            txt = txt.Replace("%Y%", workspace);
             txt = txt.Replace("%Z1%", workspace);
             txt = txt.Replace("%P%", Stringer.Params(fields));
             txt = txt.Replace("%V%", Stringer.Variables(fields));

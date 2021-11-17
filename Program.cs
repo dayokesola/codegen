@@ -25,9 +25,9 @@ namespace nboni.CodeGen
             try { var v2 = args[2]; } catch { args[2] = "long"; } 
             try { var v3 = args[3]; } catch { args[3] = "name;code;info;statusid"; } 
             try { module = args[4]; } catch { throw new Exception("Param 5: Module name is required"); } 
-            try { mycase = args[5]; } catch { mycase = "lower"; } 
-            try { genfile = args[6]; } catch { genfile = "core"; } 
-            try { workspace = args[7]; } catch { workspace = module; } 
+            try { mycase = args[5]; } catch { mycase = "lower"; args[5] = mycase; } 
+            try { genfile = args[6]; } catch { genfile = "core"; args[6] = genfile; } 
+            try { workspace = args[7]; } catch { workspace = module; args[7] = workspace; } 
             var basepath = "output\\" + args[4] + "." + args[0] + ".txt";
             var formats = "Formats\\";
 

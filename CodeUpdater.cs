@@ -84,6 +84,7 @@ namespace nboni.CodeGen
             var dir = cps.basepath + snippet.folder;
             dir = dir.Replace("%Z1%", Area);
             dir = dir.Replace("%Z%", Module); 
+            dir = dir.Replace("%N%", Class2);
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
             fle = fle.Replace("%Z%", Module);
@@ -118,6 +119,7 @@ namespace nboni.CodeGen
             var dir = cps.basepath + snippet.folder;
             dir = dir.Replace("%Z1%", Area);
             dir = dir.Replace("%Z%", Module);
+            dir = dir.Replace("%N%", Class2);
 
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
@@ -143,6 +145,7 @@ namespace nboni.CodeGen
             var dir = cps.basepath + snippet.folder;
             dir = dir.Replace("%Z1%", Area);
             dir = dir.Replace("%Z%", Module);
+            dir = dir.Replace("%N%", Class2);
 
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
