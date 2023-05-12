@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Microsoft.SqlServer.Server;
+using System.Reflection;
 
 namespace nboni.CodeGen
 {
@@ -61,56 +63,6 @@ namespace nboni.CodeGen
             return txt;
         }
 
-        public static string MigrationMapper(Dictionary<string, string> fields, int mode = 2)
-        {
-            var txt = "";
-            foreach (var field in fields)
-            {
-                if (field.Key.ToLower() == "id")
-                {
-                    if (field.Value.ToLower() == "int" || field.Value.ToLower() == "long" || field.Value.ToLower() == "short")
-                    { 
-                    }
-                    else
-                    {
-                        txt += "builder.Property(o => o.id).HasDefaultValueSql(\"UUID()\"); " + Environment.NewLine;
-                    }
-                }
-                else if (field.Key.ToLower().EndsWith("id"))
-                {
-                    txt += "builder.HasIndex(o => o." + field.Key + "); " + Environment.NewLine;
-                }
-                else { }
-
-                switch (field.Value)
-                {
-                    case "string": 
-                        txt += "builder.Property(o => o." + field.Key + ").HasColumnType(\"varchar\").HasMaxLength(128);" + Environment.NewLine;
-                        break; 
-                }
-
-
-                if (mode == 2)
-                {
-                    if (field.Key.EndsWith("Id"))
-                    {
-                        var b = field.Key.Substring(0, field.Key.Length - 2) + "Name";
-
-                        txt += "builder.Property(o => o." + b + ").HasColumnType(\"varchar\").HasMaxLength(128);" + Environment.NewLine;
-                    }
-
-
-                    if (field.Key.EndsWith("id"))
-                    {
-                        var b = field.Key.Substring(0, field.Key.Length - 2) + "name";
-
-                        txt += "builder.Property(o => o." + b + ").HasColumnType(\"varchar\").HasMaxLength(128);" + Environment.NewLine;
-                    }
-                }
-            }
-            return txt;
-        }
-
         public static string FirstToLower(string k)
         {
             if (string.IsNullOrEmpty(k))
@@ -146,7 +98,7 @@ namespace nboni.CodeGen
         public static string JSModel(Dictionary<string, string> fields)
         {
             var txt = "Id: 0,";
-            if(Program.mycase == "lower")
+            if (Program.mycase == "lower")
             {
                 txt = txt.ToLower();
             }
@@ -165,6 +117,62 @@ namespace nboni.CodeGen
             return txt.Trim(trim);
         }
 
+        public static string MappingColumns(Dictionary<string, string> fields)
+        {
+            var txt = "";
+            foreach (var field in fields)
+            {
+                txt += $"x.Column(y => y.{field.Key}).WithName('{field.Key.ToLower()}');" + Environment.NewLine;
+            }
+            return txt;
+        }
+
+        public static string MigrationMapper(Dictionary<string, string> fields)
+        {
+            var txt = "";
+
+            //column names
+            foreach (var field in fields)
+            {
+                txt += $"builder.Property(o => o.{field.Key}).HasColumnName('{field.Key.ToLower()}'); " + Environment.NewLine;
+
+            }
+            txt += Environment.NewLine;
+
+            //string columns
+            foreach (var field in fields)
+            {   
+                switch (field.Value)
+                {
+                    case "string": 
+                        txt += "builder.Property(o => o." + field.Key + ").HasColumnType(\"varchar\").HasMaxLength(128);" + Environment.NewLine;
+                        break; 
+                } 
+            }
+
+            txt += Environment.NewLine;
+
+            //index id columns
+            foreach (var field in fields)
+            {
+                if (field.Key.ToLower() == "id")
+                {
+                    if (field.Value.ToLower() == "int" || field.Value.ToLower() == "long" || field.Value.ToLower() == "short")
+                    {
+                    }
+                    else
+                    {
+                        txt += "builder.Property(o => o.id).HasDefaultValueSql(\"UUID()\"); " + Environment.NewLine;
+                    }
+                }
+                else if (field.Key.ToLower().EndsWith("id"))
+                {
+                    txt += "builder.HasIndex(o => o." + field.Key + "); " + Environment.NewLine;
+                }
+                else { } 
+            }
+            return txt;
+        }
         public static string ModelVariables(Dictionary<string, string> fields)
         {
             var txt = "";
@@ -175,7 +183,6 @@ namespace nboni.CodeGen
             char[] trim = { ',' };
             return txt.Trim(trim);
         }
-
         public static string Paginator(Dictionary<string, string> fields)
         {
             var txt = "";
@@ -200,8 +207,8 @@ namespace nboni.CodeGen
                         def = "''";
                         break;
                     case "Guid":
-                        def = "''";
-                        fv = "string";
+                        def = "null";
+                        fv = "Guid?";
                         break;
                     case "int":
                     case "decimal":
@@ -237,12 +244,16 @@ namespace nboni.CodeGen
             //add a string for obkect
 
             var txt = "";
+            var defstring = " = string.Empty;";
             foreach (var field in fields)
             {
-                txt += @"/// <summary>
-            /// 
-            /// </summary>";
-                txt += Environment.NewLine + "public " + field.Value + " " + field.Key + " { get; set; }" + Environment.NewLine;
+                var def = "";
+                if (field.Value.ToLower() == "string") def = defstring;
+                txt += @"
+        /// <summary>
+        /// 
+        /// </summary>";
+                txt += Environment.NewLine + "\t\tpublic " + field.Value + " " + field.Key + " { get; set; }" + def +  Environment.NewLine;
 
                 if (mode == 2)
                 {
@@ -321,20 +332,31 @@ namespace nboni.CodeGen
             return txt.Trim(trim);
         }
 
-        public static string QueryableView(Dictionary<string, string> fields)
-        {
+        public static string QueryableView(Dictionary<string, string> fields, string formats)
+        { 
             var temp1 = @"if (!string.IsNullOrEmpty(%k%))
             {
                 sql += $' and %K% = @{c} ';
                 AddParam('%k%', %k%);
                 c++;
             }";
+            if(File.Exists(formats + "filter.queryable.string.ini"))
+            {
+                temp1 = File.ReadAllText(formats + "filter.queryable.string.ini");
+            }
+
+
             var temp2 = @"if (%k% > 0)
             {
                 sql += $' and %K% = @{c} ';
                 AddParam('%k%', %k%);
                 c++;
-            }";
+            }"; 
+            if (File.Exists(formats + "filter.queryable.number.ini"))
+            {
+                temp2 = File.ReadAllText(formats + "filter.queryable.number.ini");
+            }
+
             var temp3 = @"if (%k%.HasValue)
             {
                 var %k%Val =  %k%.GetValueOrDefault();
@@ -343,6 +365,10 @@ namespace nboni.CodeGen
                 c++;
             }";
 
+            if (File.Exists(formats + "filter.queryable.nullable.ini"))
+            {
+                temp3 = File.ReadAllText(formats + "filter.queryable.nullable.ini");
+            }
 
             var txt = "";
             foreach (var field in fields)
@@ -376,6 +402,27 @@ namespace nboni.CodeGen
             }
             char[] trim = { ',' };
             return txt.Trim(trim);
+        }
+
+        public static string QueryJoins(Dictionary<string, string> fields)
+        {
+            int cnt = 1;
+            var txt = "";
+
+            var joina = "";
+            foreach (var field in fields)
+            {
+                var fx = field.Key.ToLower();
+                if (fx.EndsWith("id"))
+                {
+                    var b = fx.Substring(0, field.Key.Length - 2) + "name";
+
+                    joina += "LEFT JOIN <JOINTABLE> x" + cnt + " ON  x" + cnt + ".<JOINID> = w." + fx + Environment.NewLine;
+                    cnt++;
+                }
+            }
+            char[] trim = { ',' };
+            return txt.Trim(trim).ToLower() + Environment.NewLine + joina;
         }
 
         public static string QueryString(Dictionary<string, string> fields)
@@ -616,7 +663,7 @@ namespace nboni.CodeGen
                             def = "uuid";
                             break;
                         case "short":
-                            def = "smallint";
+                            def = "tinyint";
                             break;
                         case "int":
                             def = "int";
@@ -849,37 +896,12 @@ namespace nboni.CodeGen
                 {
                     var b = fx.Substring(0, field.Key.Length - 2) + "name";
 
-                    txt += "x" + cnt + "." + b + ",";
+                    txt += "x" + cnt + ".<JOINFIELD> as " + b + ",";
                     cnt++;
                 }
             }
             char[] trim = { ',' };
             return txt.Trim(trim).ToLower();
-        }
-
-
-        public static string QueryJoins(Dictionary<string, string> fields)
-        {
-            int cnt = 1;
-            var txt = "";
-
-            var joina = "";
-            foreach (var field in fields)
-            {  
-                var fx = field.Key.ToLower();
-                if (fx.EndsWith("id"))
-                {
-                    var b = fx.Substring(0, field.Key.Length - 2) + "name";
-
-                    txt += "x" + cnt + ".name as " + b + ",";
-
-                    joina += "LEFT JOIN <pfx>_consol_entitystatuses x" + cnt + " ON x" + cnt + ".entity = '<ENTITY>' and x" + cnt + ".eid = x." + fx + Environment.NewLine;
-                    joina += "LEFT JOIN <JOINTABLE> x" + cnt + " ON  x" + cnt + ".id = x." + fx + Environment.NewLine + Environment.NewLine;
-                    cnt++;
-                }
-            }
-            char[] trim = { ',' };
-            return txt.Trim(trim).ToLower() + Environment.NewLine + joina;
         }
         public static string ViewBag(Dictionary<string, string> fields)
         {
@@ -890,6 +912,34 @@ namespace nboni.CodeGen
             }
             char[] trim = { ',' };
             return txt.Trim(trim);
+        }
+
+        public static string ID_Query(string idtype)
+        {
+            if (idtype.ToLower() == "guid") return " id is not null ";
+            else return " id > 0 ";
+        }
+
+        public static string ID_Param(string idtype)
+        {
+            if (idtype.ToLower() == "guid") return " Guid? id = null";
+            else return " %T% id = 0";
+        }
+        public static string ID_Filter(string idtype)
+        {
+            if (idtype.ToLower() == "guid") return "id != null";
+            else return "id > 0";
+        }
+
+        public static string ID_Generate(string idtype)
+        {
+            if (idtype.ToLower() == "guid") return "entity.id = Guid.NewGuid()";
+            else return "entity.id = 0";
+        }
+        public static string ID_Setup(string idtype)
+        {
+            if (idtype.ToLower() == "guid") return "false";
+            else return "true";
         }
     }
 

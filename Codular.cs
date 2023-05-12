@@ -70,6 +70,11 @@ namespace nboni.CodeGen
 
         private void Paint(string txt, string title = "")
         {
+            txt = txt.Replace("%ID_QRY%", Stringer.ID_Query(idtype));
+            txt = txt.Replace("%ID_PRM%", Stringer.ID_Param(idtype));
+            txt = txt.Replace("%ID_FLT%", Stringer.ID_Filter(idtype));
+            txt = txt.Replace("%ID_INIT%", Stringer.ID_Generate(idtype));
+            txt = txt.Replace("%ID_AUTO%", Stringer.ID_Setup(idtype));
             txt = txt.Replace("%H%", classname);
             txt = txt.Replace("%N%", classnameplural);
             txt = txt.Replace("%T%", idtype);
@@ -81,7 +86,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%Z1%", workspace);
             txt = txt.Replace("%P%", Stringer.Params(fields));
             txt = txt.Replace("%V%", Stringer.Variables(fields));
-            txt = txt.Replace("%W%", Stringer.Variables(fields, "x"));
+            txt = txt.Replace("%W%", Stringer.Variables(fields, "x0"));
             txt = txt.Replace("%QJ%", Stringer.QueryJoins(fields));
             txt = txt.Replace("%WT1%", Stringer.TableParams(fields, idtype, "SQLSERVER"));
             txt = txt.Replace("%WT2%", Stringer.TableParams(fields, idtype, "MYSQL"));
@@ -90,7 +95,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%M%", Stringer.ModelVariables(fields));
             txt = txt.Replace("%Q%", Stringer.QueryString(fields));
             txt = txt.Replace("%F%", Stringer.Queryable(fields));
-            txt = txt.Replace("%F1%", Stringer.QueryableView(fields));
+            txt = txt.Replace("%F1%", Stringer.QueryableView(fields, formats));
             txt = txt.Replace("%FG%", Stringer.FactorMapper(fields));
             txt = txt.Replace("%DV%", Stringer.DetailView(fields, formats));
             txt = txt.Replace("%C%", Stringer.Properties(fields));
@@ -104,9 +109,10 @@ namespace nboni.CodeGen
             txt = txt.Replace("%TR%", Stringer.TableHeader(fields));
             txt = txt.Replace("%TD%", Stringer.TableRow(fields));
             txt = txt.Replace("%MM1%", Stringer.MigrationMapper(fields));
-            txt = txt.Replace("%MM2%", Stringer.MigrationMapper(fields, 2));
+            txt = txt.Replace("%MM2%", Stringer.MigrationMapper(fields));
             txt = txt.Replace("%SR%", Stringer.SearchFields(fields, formats));
             txt = txt.Replace("%S%", Stringer.SaveFields(fields, formats));
+            txt = txt.Replace("%MC%", Stringer.MappingColumns(fields));
             txt = txt.Replace("'", "\"");
             txt = txt.Replace("`", "'");
             code.AppendLine(title);
