@@ -85,6 +85,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%Y%", workspace);
             txt = txt.Replace("%Z1%", workspace);
             txt = txt.Replace("%P%", Stringer.Params(fields));
+            txt = txt.Replace("%P3%", Stringer.Params(fields, 3));
             txt = txt.Replace("%V%", Stringer.Variables(fields));
             txt = txt.Replace("%W%", Stringer.Variables(fields, "x0"));
             txt = txt.Replace("%QJ%", Stringer.QueryJoins(fields));
@@ -100,7 +101,8 @@ namespace nboni.CodeGen
             txt = txt.Replace("%DV%", Stringer.DetailView(fields, formats));
             txt = txt.Replace("%C%", Stringer.Properties(fields));
             txt = txt.Replace("%C2%", Stringer.Properties(fields, 2));
-            txt = txt.Replace("%JM%", Stringer.JSModel(fields));
+            txt = txt.Replace("%C3%", Stringer.Properties(fields, 3));
+            txt = txt.Replace("%JM%", Stringer.JSModel(fields, idtype));
             txt = txt.Replace("%TC%", Stringer.TableColumns(fields));
             txt = txt.Replace("%J%", Stringer.JObjectHelper(fields));
             txt = txt.Replace("%B%", Stringer.ViewBag(fields));
@@ -113,7 +115,9 @@ namespace nboni.CodeGen
             txt = txt.Replace("%SR%", Stringer.SearchFields(fields, formats));
             txt = txt.Replace("%S%", Stringer.SaveFields(fields, formats));
             txt = txt.Replace("%MC%", Stringer.MappingColumns(fields));
-            txt = txt.Replace("'", "\"");
+            txt = txt.Replace("%FDL%", Stringer.FieldDataList(fields));
+            txt = txt.Replace("%FDC%", Stringer.FieldDataCode(fields));
+            txt = txt.Replace("'", "\""); 
             txt = txt.Replace("`", "'");
             code.AppendLine(title);
             code.AppendLine(txt);

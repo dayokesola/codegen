@@ -63,6 +63,55 @@ namespace nboni.CodeGen
             return txt;
         }
 
+        public static string FieldDataList(Dictionary<string, string> fields)
+        {
+            var txt = "";
+            foreach (var field in fields)
+            {
+                txt += field.Key + ",";
+            }
+            char[] trim = { ',' };
+            return txt.Trim(trim);
+        }
+
+        public static string FieldDataCode(Dictionary<string, string> fields)
+        {
+            var txt = ""; 
+            foreach (var field in fields)
+            { 
+                switch (field.Value)
+                {
+                    case "string":
+                    case "Guid":
+                    case "double":
+                    case "bool": 
+                        txt += "0";
+                        break; 
+                    case "short":
+                    case "int":
+                    case "int?":
+                    case "long":
+                    case "long?":
+                        txt += "1";  
+                        break;
+                    case "decimal":
+                        txt += "2";
+                        break;  
+                    case "DateTime":
+                    case "DateRangeFilter":
+                    case "DateTime?":
+                        txt += "3";
+                        break;  
+                    default:
+                        txt += "0";
+                        break;
+                } 
+            }
+
+
+            return txt;
+        }
+
         public static string FirstToLower(string k)
         {
             if (string.IsNullOrEmpty(k))
@@ -95,9 +144,15 @@ namespace nboni.CodeGen
             return txt.Trim(trim);
         }
 
-        public static string JSModel(Dictionary<string, string> fields)
+        public static string JSModel(Dictionary<string, string> fields, string idtype)
         {
             var txt = "Id: 0,";
+            
+            if(idtype == "Guid")
+            {
+                txt = "Id: '00000000-0000-0000-0000-000000000000',";
+            }
+            
             if (Program.mycase == "lower")
             {
                 txt = txt.ToLower();
@@ -106,11 +161,45 @@ namespace nboni.CodeGen
             {
                 if (Program.mycase == "lower")
                 {
-                    txt += Environment.NewLine + field.Key.ToLower() + ": '',";
+                    switch (field.Value)
+                    {
+                        case "Guid":
+                            txt += Environment.NewLine + field.Key.ToLower() + ": '00000000-0000-0000-0000-000000000000',";
+                            break;  
+                        case "int":
+                        case "long":
+                        case "int?":
+                        case "long?":
+                        case "short":
+                        case "short?":
+                            txt += Environment.NewLine + field.Key.ToLower() + ": 0,";
+                            break;
+                        default:
+                            txt += Environment.NewLine + field.Key.ToLower() + ": '',";
+                            break;
+                    }
+
                 }
                 else
                 {
-                    txt += Environment.NewLine + FirstToLower(field.Key) + ": '',";
+
+                    switch (field.Value)
+                    {
+                        case "Guid":
+                            txt += Environment.NewLine + FirstToLower(field.Key) + ": '00000000-0000-0000-0000-000000000000',";
+                            break;
+                        case "int":
+                        case "long":
+                        case "int?":
+                        case "long?":
+                        case "short":
+                        case "short?":
+                            txt += Environment.NewLine + FirstToLower(field.Key) + ": 0,";
+                            break;
+                        default:
+                            txt += Environment.NewLine + FirstToLower(field.Key) + ": '',";
+                            break;
+                    } 
                 }
             }
             char[] trim = { ',' };
@@ -141,13 +230,13 @@ namespace nboni.CodeGen
 
             //string columns
             foreach (var field in fields)
-            {   
+            {
                 switch (field.Value)
                 {
-                    case "string": 
+                    case "string":
                         txt += "builder.Property(o => o." + field.Key + ").HasColumnType(\"varchar\").HasMaxLength(128);" + Environment.NewLine;
-                        break; 
-                } 
+                        break;
+                }
             }
 
             txt += Environment.NewLine;
@@ -169,7 +258,7 @@ namespace nboni.CodeGen
                 {
                     txt += "builder.HasIndex(o => o." + field.Key + "); " + Environment.NewLine;
                 }
-                else { } 
+                else { }
             }
             return txt;
         }
@@ -178,7 +267,14 @@ namespace nboni.CodeGen
             var txt = "";
             foreach (var field in fields)
             {
-                txt += "model." + field.Key + ",";
+                if (field.Value.ToLower() == "daterangefilter")
+                {
+                    txt += "model." + field.Key + ".ToDateRangeFilter(),";
+                }
+                else
+                {
+                    txt += "model." + field.Key + ",";
+                }
             }
             char[] trim = { ',' };
             return txt.Trim(trim);
@@ -194,13 +290,14 @@ namespace nboni.CodeGen
             return txt.Trim(trim);
         }
 
-        public static string Params(Dictionary<string, string> fields)
+        public static string Params(Dictionary<string, string> fields, int mode = 1)
         {
             var txt = "";
             foreach (var field in fields)
             {
                 var def = "";
                 var fv = field.Value;
+                var nuf = "";
                 switch (field.Value)
                 {
                     case "string":
@@ -226,13 +323,27 @@ namespace nboni.CodeGen
                         def = "null";
                         fv = "DateTime?";
                         break;
-
+                    case "DateRangeFilter":
+                        def = "null";
+                        fv = "DateRangeFilter";
+                        nuf = "DateTime?";
+                        break;
                     default:
                         def = "null";
                         fv = field.Value + "?";
                         break;
                 }
-                txt += fv + " " + FirstToLower(field.Key) + " = " + def + ",";
+
+                if (field.Value == "DateRangeFilter" && mode == 3)
+                {
+
+                    txt += nuf + " " + FirstToLower(field.Key) + " = " + def + ",";
+                    txt += nuf + " " + FirstToLower(field.Key) + "2 = " + def + ",";
+                }
+                else
+                {
+                    txt += fv + " " + FirstToLower(field.Key) + " = " + def + ",";
+                }
             }
             char[] trim = { ',' };
             return txt.Trim(trim);
@@ -249,11 +360,27 @@ namespace nboni.CodeGen
             {
                 var def = "";
                 if (field.Value.ToLower() == "string") def = defstring;
+
+                var datatype = field.Value;
+                if (field.Value.ToLower() == "daterangefilter")
+                {
+                    datatype = "DateTime";
+                }
+
                 txt += @"
         /// <summary>
         /// 
         /// </summary>";
-                txt += Environment.NewLine + "\t\tpublic " + field.Value + " " + field.Key + " { get; set; }" + def +  Environment.NewLine;
+                txt += Environment.NewLine + "\t\tpublic " + datatype + " " + field.Key + " { get; set; }" + def + Environment.NewLine;
+
+                if (field.Value.ToLower() == "daterangefilter" && mode == 3)
+                {
+                    txt += @"
+        /// <summary>
+        /// 
+        /// </summary>";
+                    txt += Environment.NewLine + "\t\tpublic " + datatype + " " + field.Key + "2 { get; set; }" + def + Environment.NewLine;
+                }
 
                 if (mode == 2)
                 {
@@ -298,6 +425,17 @@ namespace nboni.CodeGen
                 var %k%Val =  %k%.GetValueOrDefault();
                 table = table.Where(x => x.%K% == %k%Val);
             }";
+            var temp4 = @"if (%k%.startdate.HasValue)
+            {
+                var %k%SdVal =  %k%.startdate.GetValueOrDefault();
+                table = table.Where(x => x.%K% >= %k%SdVal);
+            }
+
+            if (%k%.enddate.HasValue)
+            {
+                var %k%EdVal =  %k%.enddate.GetValueOrDefault().AddDays(1);
+                table = table.Where(x => x.%K% < %k%EdVal);
+            }";
 
 
             var txt = "";
@@ -319,6 +457,9 @@ namespace nboni.CodeGen
                     case "DateTime":
                         temp = temp3;
                         break;
+                    case "DateRangeFilter":
+                        temp = temp4;
+                        break;
                     default:
                         temp = temp3;
                         break;
@@ -333,14 +474,14 @@ namespace nboni.CodeGen
         }
 
         public static string QueryableView(Dictionary<string, string> fields, string formats)
-        { 
+        {
             var temp1 = @"if (!string.IsNullOrEmpty(%k%))
             {
                 sql += $' and %K% = @{c} ';
                 AddParam('%k%', %k%);
                 c++;
             }";
-            if(File.Exists(formats + "filter.queryable.string.ini"))
+            if (File.Exists(formats + "filter.queryable.string.ini"))
             {
                 temp1 = File.ReadAllText(formats + "filter.queryable.string.ini");
             }
@@ -351,7 +492,7 @@ namespace nboni.CodeGen
                 sql += $' and %K% = @{c} ';
                 AddParam('%k%', %k%);
                 c++;
-            }"; 
+            }";
             if (File.Exists(formats + "filter.queryable.number.ini"))
             {
                 temp2 = File.ReadAllText(formats + "filter.queryable.number.ini");
@@ -369,6 +510,23 @@ namespace nboni.CodeGen
             {
                 temp3 = File.ReadAllText(formats + "filter.queryable.nullable.ini");
             }
+
+
+            var temp4 = @"if (%k%.startdate.HasValue)
+            {
+                var %k%SdVal =  %k%.startdate.GetValueOrDefault();
+                sql += $' and %K% >= @{c} ';
+                AddParam('%k%', %k%SdVal);
+                c++;
+            }
+
+            if (%k%.enddate.HasValue)
+            {
+                var %k%EdVal =  %k%.enddate.GetValueOrDefault().AddDays(1);
+                sql += $' and %K% < @{c} ';
+                AddParam('%k%', %k%EdVal);
+                c++;
+            }";
 
             var txt = "";
             foreach (var field in fields)
@@ -390,6 +548,9 @@ namespace nboni.CodeGen
                     case "bool":
                     case "DateTime":
                         temp = temp3;
+                        break;
+                    case "DateRangeFilter":
+                        temp = temp4;
                         break;
                     default:
                         temp = temp3;
@@ -513,7 +674,7 @@ namespace nboni.CodeGen
         {
             var txt = "";
             foreach (var field in fields)
-            { 
+            {
 
                 if (Program.mycase == "lower")
                 {
@@ -530,14 +691,14 @@ namespace nboni.CodeGen
             if (Program.mycase == "lower")
             {
                 txt += Environment.NewLine + "{'data': 'recordstatustext' },";
-                txt += Environment.NewLine + "{'data': 'createdattext' },";
-                txt += Environment.NewLine + "{'data': 'updatedattext' },";
+                txt += Environment.NewLine + "{'data': 'createdat' },";
+                txt += Environment.NewLine + "{'data': 'updatedat' },";
             }
             else
             {
                 txt += Environment.NewLine + "{'data': 'RecordStatusText' },";
-                txt += Environment.NewLine + "{'data': 'CreatedAtText' },";
-                txt += Environment.NewLine + "{'data': 'UpdatedAtText' },";
+                txt += Environment.NewLine + "{'data': 'CreatedAt' },";
+                txt += Environment.NewLine + "{'data': 'UpdatedAt' },";
 
             }
 
@@ -572,7 +733,7 @@ namespace nboni.CodeGen
             if (Program.mycase == "lower")
             {
                 _id = "id";
-            } 
+            }
 
             var fields = new Dictionary<string, string>
             {
@@ -623,6 +784,7 @@ namespace nboni.CodeGen
                             def = "bit NOT NULL";
                             break;
                         case "DateTime":
+                        case "DateRangeFilter":
                             def = "datetime NOT NULL";
                             break;
                         case "DateTime?":
@@ -657,10 +819,10 @@ namespace nboni.CodeGen
                     switch (field.Value)
                     {
                         case "string":
-                            def = "varchar(64) NULL";
+                            def = "varchar(128) NULL";
                             break;
                         case "Guid":
-                            def = "uuid";
+                            def = "CHAR(36)";
                             break;
                         case "short":
                             def = "tinyint";
@@ -687,6 +849,7 @@ namespace nboni.CodeGen
                             def = "bit NOT NULL";
                             break;
                         case "DateTime":
+                        case "DateRangeFilter":
                             def = "datetime NOT NULL";
                             break;
                         case "DateTime?":
@@ -754,6 +917,7 @@ namespace nboni.CodeGen
                             def = "boolean NULL";
                             break;
                         case "DateTime":
+                        case "DateRangeFilter":
                             def = "timestamp without time zone";
                             break;
                         case "DateTime?":
@@ -810,7 +974,7 @@ namespace nboni.CodeGen
 
                 if (Program.mycase == "lower")
                 {
-                    t = temp1.Replace("%k%",field.Key.ToLower());
+                    t = temp1.Replace("%k%", field.Key.ToLower());
                     t = t.Replace("%K%", field.Key.ToLower()) + Environment.NewLine;
                 }
                 else
@@ -876,10 +1040,18 @@ namespace nboni.CodeGen
         {
             var txt = "";
             foreach (var field in fields)
-            { 
-                txt += FirstToLower(field.Key) + ",";
+            {
+                if (field.Value == "DateRangeFilter")
+                {
+
+                    txt += "new DateRangeFilter(){ startdate = " + FirstToLower(field.Key) + ", enddate = " + FirstToLower(field.Key) + "2 },";
+                }
+                else
+                {
+                    txt += FirstToLower(field.Key) + ",";
+                }
             }
-            char[] trim = { ','};
+            char[] trim = { ',' };
             return txt.Trim(trim);
         }
         public static string Variables(Dictionary<string, string> fields, string dot)
@@ -891,7 +1063,7 @@ namespace nboni.CodeGen
             {
                 txt += dot + "." + field.Key.ToLower() + ",";
 
-                var fx = field.Key.ToLower(); 
+                var fx = field.Key.ToLower();
                 if (fx.EndsWith("id"))
                 {
                     var b = fx.Substring(0, field.Key.Length - 2) + "name";
