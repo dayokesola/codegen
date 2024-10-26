@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Microsoft.SqlServer.Server;
 
 namespace nboni.CodeGen
 {
@@ -13,6 +14,9 @@ namespace nboni.CodeGen
         private string classname;
         private string classnameplural;
         private string idtype;
+        private string cqrsname;
+        private string cqrscmd;
+        private string cqrsmethod;
         private string fieldstext;
         private string mycase;
         private string genfile;
@@ -23,15 +27,33 @@ namespace nboni.CodeGen
         private Dictionary<string, string> fields;
         internal void SetArgs(string[] args)
         {
-            classname = args[0];
-            classnameplural = args[1];
-            idtype = args[2];
-            fieldstext = args[3];
-            module = args[4];
-            mycase = args[5];
-            genfile = args[6];
-            workspace = args[7];
+            classname = args[1];
+            classnameplural = args[2];
+            idtype = args[3];
+            fieldstext = args[4];
+            module = args[5];
+            mycase = args[6];
+            genfile = args[7];
+            workspace = args[8];
             fields = Stringer.Transform(fieldstext);
+        }
+
+        internal void SetCQRSArgs(string[] args)
+        {
+            classname = args[1];
+            classnameplural = args[2];
+            idtype = args[3];
+            fieldstext = args[4];
+            char[] sep2 = { ':', ';' };
+            var bits = fieldstext.Split(sep2, StringSplitOptions.RemoveEmptyEntries);
+
+            cqrsname = bits[0];
+            cqrscmd = bits[1];
+            cqrsmethod = bits[2];
+
+            module = args[5];
+            mycase = args[6];
+            genfile = args[7];
         }
 
         public Codular()
@@ -87,6 +109,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%P%", Stringer.Params(fields));
             txt = txt.Replace("%P3%", Stringer.Params(fields, 3));
             txt = txt.Replace("%V%", Stringer.Variables(fields));
+            txt = txt.Replace("%V3%", Stringer.Variables3(fields));
             txt = txt.Replace("%W%", Stringer.Variables(fields, "x0"));
             txt = txt.Replace("%QJ%", Stringer.QueryJoins(fields));
             txt = txt.Replace("%WT1%", Stringer.TableParams(fields, idtype, "SQLSERVER"));
@@ -230,6 +253,53 @@ namespace nboni.CodeGen
         {
             var txt = File.ReadAllText(formats + "indexview.ini");   
             Paint(txt, "INDEX VIEW");
+        }
+        private void GenerateCQRS()
+        {
+            var txt = File.ReadAllText(formats + "cqrs.ini");
+            PaintCQRS(txt, "CQRS VIEW");
+        }
+        private void GenerateCQRSAPIController()
+        {
+            var txt = File.ReadAllText(formats + "apicontroller.ini");
+            PaintCQRS(txt, "API COntroller");
+        }
+
+        internal string GenerateCQRS(string _basepath, string _formats)
+        {
+            code = new StringBuilder();
+            basepath = _basepath;
+            formats = _formats;
+
+            GenerateCQRS();
+            GenerateCQRSAPIController();
+
+            File.WriteAllText(basepath, code.ToString());
+
+            return code.ToString();
+        }
+
+
+        private void PaintCQRS(string txt, string title = "")
+        { 
+            txt = txt.Replace("%H%", classname);
+            txt = txt.Replace("%N%", classnameplural);
+            txt = txt.Replace("%CN%", cqrsname);
+            txt = txt.Replace("%CC%", cqrscmd);
+            txt = txt.Replace("%CM%", cqrsmethod);
+            txt = txt.Replace("%T%", idtype);
+            txt = txt.Replace("%Z%", module);
+            txt = txt.Replace("%z%", module.ToLower());
+            txt = txt.Replace("%h%", classname.ToLower());
+            txt = txt.Replace("%n%", classnameplural.ToLower()); 
+            txt = txt.Replace("%cn%", cqrsname.ToLower());
+            txt = txt.Replace("'", "\"");
+            txt = txt.Replace("`", "'");
+            code.AppendLine(title);
+            code.AppendLine(txt);
+            code.AppendLine("");
+            code.AppendLine("-------------------------------------------------");
+            code.AppendLine("");
         }
     }
 

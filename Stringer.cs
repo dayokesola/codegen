@@ -174,6 +174,10 @@ namespace nboni.CodeGen
                         case "short?":
                             txt += Environment.NewLine + field.Key.ToLower() + ": 0,";
                             break;
+                        case "DateRangeFilter":
+                            txt += Environment.NewLine + field.Key.ToLower() + ": '',";
+                            txt += Environment.NewLine + field.Key.ToLower() + "2: '',";
+                            break;
                         default:
                             txt += Environment.NewLine + field.Key.ToLower() + ": '',";
                             break;
@@ -195,6 +199,10 @@ namespace nboni.CodeGen
                         case "short":
                         case "short?":
                             txt += Environment.NewLine + FirstToLower(field.Key) + ": 0,";
+                            break;
+                        case "DateRangeFilter":
+                            txt += Environment.NewLine + FirstToLower(field.Key) + ": '',";
+                            txt += Environment.NewLine + FirstToLower(field.Key) + "2: '',";
                             break;
                         default:
                             txt += Environment.NewLine + FirstToLower(field.Key) + ": '',";
@@ -639,9 +647,17 @@ namespace nboni.CodeGen
                             <input type='text' name='%k%' id='%k%' value='@ViewBag.%k%' placeholder='%K%' class='form-control'>
                         </div>
                    ";
+
+            var temp3 = @" 
+                        <div class='form-group'>
+                            <label>%K%</label>
+                            <input type='text' name='%k%2' id='%k%2' value='@ViewBag.%k%2' placeholder='%K%2' class='form-control'>
+                        </div>
+                   ";
             try
             {
-                temp1 = File.ReadAllText(formats + "indexformitem.ini");
+                temp1 = File.ReadAllText(formats + "indexformitem.ini"); 
+                temp3 = File.ReadAllText(formats + "indexformitem3.ini");
             }
             catch
             {
@@ -661,10 +677,23 @@ namespace nboni.CodeGen
                 {
                     fk = FirstToLower(fk);
                 }
+                var t = "";
+                var t3 = "";
 
-                var t = temp1.Replace("%k%", FirstToLower(fk));
-                t = t.Replace("%K%", fk) + Environment.NewLine;
-                txt += t;
+                if (field.Value == "DateRangeFilter")
+                {
+                    t = temp1.Replace("%k%", FirstToLower(fk));
+                    t = t.Replace("%K%", fk) + Environment.NewLine;
+
+                    t3 = temp3.Replace("%k%", FirstToLower(fk));
+                    t3= t3.Replace("%K%", fk) + Environment.NewLine;
+                }
+                else
+                {
+                    t = temp1.Replace("%k%", FirstToLower(fk));
+                    t = t.Replace("%K%", fk) + Environment.NewLine;
+                }
+                txt += t + t3;
             }
             char[] trim = { ',' };
             return txt.Trim(trim);
@@ -1037,6 +1066,17 @@ namespace nboni.CodeGen
         }
 
         public static string Variables(Dictionary<string, string> fields)
+        {
+            var txt = "";
+            foreach (var field in fields)
+            { 
+                txt += FirstToLower(field.Key) + ",";
+            }
+            char[] trim = { ',' };
+            return txt.Trim(trim);
+        }
+
+        public static string Variables3(Dictionary<string, string> fields)
         {
             var txt = "";
             foreach (var field in fields)

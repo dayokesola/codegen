@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace nboni.CodeGen
 {
@@ -18,7 +19,13 @@ namespace nboni.CodeGen
         private string Class1 { get; set; }
         private string Class2 { get; set; } 
         private string Area { get; set; }
+        private string KeyId { get; set; }
 
+
+        private string cqrsname { get; set; }
+        private string cqrscmd { get; set; }
+
+        private string cqrsmethod;
 
         private List<string> codelines { get; set; }
 
@@ -83,12 +90,22 @@ namespace nboni.CodeGen
             if (string.IsNullOrEmpty(snip)) return;
             var dir = cps.basepath + snippet.folder;
             dir = dir.Replace("%Z1%", Area);
-            dir = dir.Replace("%Z%", Module); 
+            dir = dir.Replace("%Z%", Module);
+            dir = dir.Replace("%T%", KeyId);
             dir = dir.Replace("%N%", Class2);
+            dir = dir.Replace("%H%", Class1);
+            dir = dir.Replace("%CN%", cqrsname);
+            dir = dir.Replace("%CC%", cqrscmd);
+            dir = dir.Replace("%CM%", cqrsmethod);
+
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
             fle = fle.Replace("%Z%", Module);
+            fle = fle.Replace("%T%", KeyId);
             fle = fle.Replace("%Z1%", Area);
+            fle = fle.Replace("%CN%", cqrsname);
+            fle = fle.Replace("%CC%", cqrscmd);
+            fle = fle.Replace("%CM%", cqrsmethod);
             //search for directoryModule
             if (!Directory.Exists(dir))
             {
@@ -119,12 +136,21 @@ namespace nboni.CodeGen
             var dir = cps.basepath + snippet.folder;
             dir = dir.Replace("%Z1%", Area);
             dir = dir.Replace("%Z%", Module);
+            dir = dir.Replace("%T%", KeyId);
             dir = dir.Replace("%N%", Class2);
+            dir = dir.Replace("%H%", Class1);
+            dir = dir.Replace("%CN%", cqrsname);
+            dir = dir.Replace("%CC%", cqrscmd);
+            dir = dir.Replace("%CM%", cqrsmethod);
 
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
             fle = fle.Replace("%Z%", Module);
+            fle = fle.Replace("%T%", KeyId);
             fle = fle.Replace("%Z1%", Area);
+            fle = fle.Replace("%CN%", cqrsname);
+            fle = fle.Replace("%CC%", cqrscmd);
+            fle = fle.Replace("%CM%", cqrsmethod);
 
             if (!Directory.Exists(dir))
             {
@@ -145,12 +171,21 @@ namespace nboni.CodeGen
             var dir = cps.basepath + snippet.folder;
             dir = dir.Replace("%Z1%", Area);
             dir = dir.Replace("%Z%", Module);
+            dir = dir.Replace("%T%", KeyId);
             dir = dir.Replace("%N%", Class2);
+            dir = dir.Replace("%H%", Class1);
+            dir = dir.Replace("%CN%", cqrsname);
+            dir = dir.Replace("%CC%", cqrscmd);
+            dir = dir.Replace("%CM%", cqrsmethod);
 
             var fle = snippet.file.Replace("%H%", Class1);
             fle = fle.Replace("%N%", Class2);
             fle = fle.Replace("%Z%", Module);
+            fle = fle.Replace("%T%", KeyId);
             fle = fle.Replace("%Z1%", Area);
+            fle = fle.Replace("%CN%", cqrsname);
+            fle = fle.Replace("%CC%", cqrscmd);
+            fle = fle.Replace("%CM%", cqrsmethod);
 
             if (!Directory.Exists(dir))
             {
@@ -204,10 +239,28 @@ namespace nboni.CodeGen
 
         internal void SetArgs(string[] args)
         {
-            Module = args[4];
-            Class1 = args[0];
-            Class2 = args[1];
-            Area = args[7];
+            Module = args[5];
+            Class1 = args[1];
+            Class2 = args[2];
+            Area = args[8];
+            KeyId = args[3];
+        }
+
+        internal void SetArgsCQRS(string[] args)
+        {
+            Module = args[5];
+            Class1 = args[1];
+            Class2 = args[2];
+
+            var fieldstext = args[4];
+            char[] sep2 = { ':', ';'  }; 
+            var bits = fieldstext.Split(sep2, StringSplitOptions.RemoveEmptyEntries);
+            cqrsname = bits[0];
+            cqrscmd = bits[1];
+            cqrsmethod = bits[2];
+
+            Area = "";
+            KeyId = args[2];
         }
     }
 }
