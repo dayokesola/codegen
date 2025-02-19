@@ -123,6 +123,8 @@ namespace nboni.CodeGen
             txt = txt.Replace("%FG%", Stringer.FactorMapper(fields));
             txt = txt.Replace("%DV%", Stringer.DetailView(fields, formats));
             txt = txt.Replace("%C%", Stringer.Properties(fields));
+            txt = txt.Replace("%CPOCO%", Stringer.PropertiesNpoco(fields));
+            txt = txt.Replace("%CPOCO2%", Stringer.PropertiesNpoco(fields, 2));
             txt = txt.Replace("%C2%", Stringer.Properties(fields, 2));
             txt = txt.Replace("%C3%", Stringer.Properties(fields, 3));
             txt = txt.Replace("%JM%", Stringer.JSModel(fields, idtype));

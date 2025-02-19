@@ -379,7 +379,8 @@ namespace nboni.CodeGen
         /// <summary>
         /// 
         /// </summary>";
-                txt += Environment.NewLine + "\t\tpublic " + datatype + " " + field.Key + " { get; set; }" + def + Environment.NewLine;
+                txt += Environment.NewLine +  
+                    "\t\tpublic " + datatype + " " + field.Key + " { get; set; }" + def + Environment.NewLine + Environment.NewLine;
 
                 if (field.Value.ToLower() == "daterangefilter" && mode == 3)
                 {
@@ -387,7 +388,8 @@ namespace nboni.CodeGen
         /// <summary>
         /// 
         /// </summary>";
-                    txt += Environment.NewLine + "\t\tpublic " + datatype + " " + field.Key + "2 { get; set; }" + def + Environment.NewLine;
+                    txt += Environment.NewLine + 
+                        "\t\tpublic " + datatype + " " + field.Key + "2 { get; set; }" + def + Environment.NewLine + Environment.NewLine;
                 }
 
                 if (mode == 2)
@@ -399,7 +401,7 @@ namespace nboni.CodeGen
                         txt += @"/// <summary>
             /// 
             /// </summary>";
-                        txt += Environment.NewLine + "public string " + b + " { get; set; }" + Environment.NewLine;
+                        txt += Environment.NewLine + "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
                     }
 
 
@@ -410,7 +412,71 @@ namespace nboni.CodeGen
                         txt += @"/// <summary>
             /// 
             /// </summary>";
-                        txt += Environment.NewLine + "public string " + b + " { get; set; }" + Environment.NewLine;
+                        txt += Environment.NewLine + "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
+                    }
+                }
+            }
+            char[] trim = { ',' };
+            return txt.Trim(trim);
+        }
+        public static string PropertiesNpoco(Dictionary<string, string> fields, int mode = 1)
+        {
+            //mode 2 is model
+            //add a string for obkect
+
+            var txt = "";
+            var defstring = " = string.Empty;";
+            foreach (var field in fields)
+            {
+                var def = "";
+                if (field.Value.ToLower() == "string") def = defstring;
+
+                var datatype = field.Value;
+                if (field.Value.ToLower() == "daterangefilter")
+                {
+                    datatype = "DateTime";
+                }
+
+                txt += @"
+        /// <summary>
+        /// 
+        /// </summary>";
+                txt += Environment.NewLine + "\t\t[Column('" + field.Key.ToLower() + "')]" + Environment.NewLine +
+                    "\t\tpublic " + datatype + " " + field.Key + " { get; set; }" + def + Environment.NewLine + Environment.NewLine;
+
+                if (field.Value.ToLower() == "daterangefilter" && mode == 3)
+                {
+                    txt += @"
+        /// <summary>
+        /// 
+        /// </summary>";
+                    txt += Environment.NewLine + "\t\t[Column('" + field.Key.ToLower() + "')]" + Environment.NewLine +
+                        "\t\tpublic " + datatype + " " + field.Key + "2 { get; set; }" + def + Environment.NewLine + Environment.NewLine;
+                }
+
+                if (mode == 2)
+                {
+                    if (field.Key.EndsWith("Id"))
+                    {
+                        var b = field.Key.Substring(0, field.Key.Length - 2) + "Name";
+
+                        txt += @"/// <summary>
+            /// 
+            /// </summary>";
+                        txt += Environment.NewLine + "\t\t[Column('" + b.ToLower() + "')]" + Environment.NewLine +
+                            "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
+                    }
+
+
+                    if (field.Key.EndsWith("id"))
+                    {
+                        var b = field.Key.Substring(0, field.Key.Length - 2) + "name";
+
+                        txt += @"/// <summary>
+            /// 
+            /// </summary>";
+                        txt += Environment.NewLine + "\t\t[Column('" + b.ToLower() + "')]" + Environment.NewLine +
+                             "\t\tpublic string " + b + " { get; set; } = string.Empty;" + Environment.NewLine + Environment.NewLine;
                     }
                 }
             }
@@ -982,7 +1048,7 @@ namespace nboni.CodeGen
                         }
                     }
 
-                    txt += "" + field.Key.ToLower() + " " + def + "," + Environment.NewLine;
+                    txt += "\t" + field.Key.ToLower() + " " + def + "," + Environment.NewLine;
                 }
             }
 
