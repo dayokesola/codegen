@@ -6,97 +6,141 @@ namespace nboni.CodeGen
     class Program
     {
         public static string mycase;
-        public static string module; 
+
+        public static string module;
+
         public static string genfile;
+
         public static string workspace;
-        static void Main(string[] args)
+
+        private static string[] _args;
+
+        private static void Main(string[] args)
         {
-            if (args[0] == "cqrs")
+            _args = args;
+            var action = "help";
+            action = GetArg(0);
+             
+            switch(action)
             {
-                //var v0 = "cqrs";
-                //var v1 = "User";
-                //var v2 = "Users";
-                //var v3 = "long";
-                //var v4 = "CommandName:Command";
-                //var v5 = "module";
-                //var v6 = "case: upper or lower";
-                //var v7 = "code gen type: core or ui";
-                //var v8 = "ui area ";
-
-
-                try { var v1 = args[1]; } catch { throw new Exception("First Parameter is Class Name"); }
-                try { var v2 = args[2]; } catch { throw new Exception("Second Parameter is Class Name in Plural"); }
-
-                try { var v3 = args[3]; } catch { args[3] = "long"; }
-                try { var v4 = args[4]; } catch { args[4] = "CreateUser:Command"; }
-                try { module = args[5]; } catch { throw new Exception("Param 5: Module name is required"); }
-                try { mycase = args[6]; } catch { mycase = "lower"; args[5] = mycase; }
-                try { genfile = args[7]; } catch { genfile = "core"; args[6] = genfile; }
-                try { workspace = args[8]; } catch { workspace = module; args[7] = workspace; }
-                var basepath = "output\\" + args[5] + "." + args[1] + ".cqrs.txt";
-                var formats = "Formats\\";
-
-
-
-                var code = new Codular();
-                code.SetCQRSArgs(args); 
-                var gend = code.GenerateCQRS(basepath, formats);
-                Console.WriteLine("Done");
-                File.AppendAllText("_cqrs.history", DateTime.Now.ToString() + Environment.NewLine + "nboni.CodeGen.exe " + string.Join(" ", args) + Environment.NewLine);
-
-                if (genfile == "core")
-                {
-                    var cu = new CodeUpdater();
-                    cu.SetArgsCQRS(args);
-                    cu.Generate(gend, formats + "paths_cqrs.json");
-                }
+                case "--help":
+                case "help":
+                case "-h":
+                    RunHelp();
+                    break;
+                case "--cqrs":
+                case "cqrs":
+                case "-c":
+                    RunCQRS();
+                    break;
+                case "--rest":
+                case "--res":
+                case "rest":
+                case "res":
+                case "-r":
+                    RunREST();
+                    break;
             }
-            else if (args[0] == "res")
+
+        }
+
+        private static void RunREST()
+        {
+            if (_args.Length != 9)
             {
-                //var v0 = "res";
-                //var v1 = "User";
-                //var v2 = "Users";
-                //var v3 = "long";
-                //var v4 = "UserName:string; FirstName: string; LastName: string; Subject: string;StatusId";
-                //var v5 = "module";
-                //var v6 = "case: upper or lower";
-                //var v7 = "code gen type: core or ui";
-                //var v8 = "ui area ";
-
-
-                try { var v1 = args[1]; } catch { throw new Exception("First Parameter is Class Name"); }
-                try { var v2 = args[2]; } catch { throw new Exception("Second Parameter is Class Name in Plural"); }
-                try { var v3 = args[3]; } catch { args[3] = "long"; }
-                try { var v4 = args[4]; } catch { args[4] = "name;code;info;statusid"; }
-                try { module = args[5]; } catch { throw new Exception("Param 5: Module name is required"); }
-                try { mycase = args[6]; } catch { mycase = "lower"; args[5] = mycase; }
-                try { genfile = args[7]; } catch { genfile = "core"; args[6] = genfile; }
-                try { workspace = args[8]; } catch { workspace = module; args[7] = workspace; }
-                var basepath = "output\\" + args[5] + "." + args[1] + ".res.txt";
-                var formats = "Formats\\";
-
-                var code = new Codular();
-                code.SetArgs(args);
-                var gend = code.Generate(basepath, formats);
-                Console.WriteLine("Done");
-
-                File.AppendAllText("_cmd.history", DateTime.Now.ToString() + Environment.NewLine + "nboni.CodeGen.exe " + string.Join(" ", args) + Environment.NewLine);
-
-                if (genfile == "core")
-                {
-                    var cu = new CodeUpdater();
-                    cu.SetArgs(args);
-                    cu.Generate(gend, formats + "paths.json");
-                }
-
-                if (genfile == "ui")
-                {
-                    var cu = new CodeUpdater();
-                    cu.SetArgs(args);
-                    cu.GenerateUI(gend, formats + "paths_ui.json");
-                }
+                Say("Invalid amount of parameters for cqrs. run -h for help");
+                return;
+            }
+            var className = GetArg(1);
+            var classNamePlural = GetArg(2);
+            var primaryKeyDataType = GetArg(3);
+            var cqrsInstruction = GetArg(4);
+            var moduleName = GetArg(5);
+            var crudCase = GetArg(6);
+            var output = GetArg(7);
+            var workspace = GetArg(8);
+             
+            string basepath2 = "output\\" + _args[5] + "." + _args[1] + ".res.txt";
+            string formats2 = "Formats\\";
+            Codular code2 = new Codular();
+            code2.SetArgs(_args);
+            string gend2 = code2.Generate(basepath2, formats2);
+            Console.WriteLine("Done");
+            File.AppendAllText("_cmd.history", DateTime.Now.ToString() + Environment.NewLine + "nboni.CodeGen.exe " + string.Join(" ", _args) + Environment.NewLine);
+            if (output == "core")
+            {
+                CodeUpdater cu2 = new CodeUpdater();
+                cu2.SetArgs(_args);
+                cu2.Generate(gend2, formats2 + "paths.json");
+            }
+            if (output == "ui")
+            {
+                CodeUpdater cu3 = new CodeUpdater();
+                cu3.SetArgs(_args);
+                cu3.GenerateUI(gend2, formats2 + "paths_ui.json");
             }
         }
-    }
 
+        private static void RunCQRS()
+        {
+            
+            if(_args.Length != 8)
+            {
+                Say("Invalid amount of parameters for REST. run -h for help");
+                return;
+            }
+            var className = GetArg(1);
+            var classNamePlural = GetArg(2);
+            var primaryKeyDataType = GetArg(3);
+            var cqrsInstruction = GetArg(4);
+            var moduleName = GetArg(5);
+            var crudCase = GetArg(6);
+            var output = GetArg(7);
+            var workspace = GetArg(8);
+
+ 
+    
+            string basepath = "output\\" + moduleName + "." + className + ".cqrs.txt";
+            string formats = "Formats\\";
+            Codular code = new Codular();
+            code.SetCQRSArgs(_args);
+            string gend = code.GenerateCQRS(basepath, formats);
+            Console.WriteLine("Done");
+            File.AppendAllText("_cqrs.history", DateTime.Now.ToString() + Environment.NewLine + "nboni.CodeGen.exe " + string.Join(" ", _args) + Environment.NewLine);
+            if (genfile == "core")
+            {
+                CodeUpdater cu = new CodeUpdater();
+                cu.SetArgsCQRS(_args);
+                cu.Generate(gend, formats + "paths_cqrs.json");
+            }
+        }
+
+        private static void Say(string v = "")
+        {
+            Console.WriteLine(v);
+        }
+
+        private static void RunHelp()
+        {
+            Say("Help Topics for Godegen");
+            Say("-----------------------");
+            Say();
+            Say("Commands:");
+            Say("Help: -h, --help, help");
+            Say("Rest Command: -r, --rest, --res, rest, res");
+            Say("CQRS: -c, --cqrs, cqrs");
+            Say();
+            Say();
+            Say("REST parameters:");
+
+
+        }
+
+        private static string GetArg(int v)
+        { 
+            if(_args == null) return string.Empty;
+            if(_args.Length > 9) return string.Empty; 
+            return _args[v]; 
+        }
+    }
 }

@@ -1,11 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using Microsoft.SqlServer.Server;
-using System.Reflection;
 
 namespace nboni.CodeGen
 {
@@ -14,9 +10,8 @@ namespace nboni.CodeGen
     {
         public static string DetailView(Dictionary<string, string> fields, string formats)
         {
-            var temp0 = @"      <dt class='col-sm-4'>%K%</dt>
-                                <dd class='col-sm-8'>{{ form.%K% }}</dd>";
-            var temp1 = @"";
+            string temp0 = "      <dt class='col-sm-4'>%K%</dt>\r\n                                <dd class='col-sm-8'>{{ form.%K% }}</dd>";
+            string temp1 = "";
             try
             {
                 temp1 = File.ReadAllText(formats + "detailview.ini");
@@ -25,90 +20,84 @@ namespace nboni.CodeGen
             {
                 temp1 = temp0;
             }
-
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                if (Program.mycase == "lower")
-                {
-                    txt += temp1.Replace("%K%", field.Key.ToLower()) + Environment.NewLine;
-                }
-                else
-                {
-                    txt += temp1.Replace("%K%", FirstToLower(field.Key)) + Environment.NewLine;
-                }
+                string t0 = temp1.Replace("%k%", FirstToLower(field.Key));
+                txt = txt + t0.Replace("%K%", field.Key) + Environment.NewLine;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string Document(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt += "/// <param name='" + FirstToLower(field.Key) + "'></param>" + Environment.NewLine;
+                txt = txt + "/// <param name='" + FirstToLower(field.Key) + "'></param>" + Environment.NewLine;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string FactorMapper(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt += field.Key + " = obj." + field.Key + "," + Environment.NewLine;
+                txt = txt + field.Key + " = obj." + field.Key + "," + Environment.NewLine;
             }
             return txt;
         }
 
         public static string FieldDataList(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field2 in fields)
             {
-                txt += field.Key + ",";
+                txt = txt + field2.Key + ",";
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string FieldDataCode(Dictionary<string, string> fields)
         {
-            var txt = ""; 
-            foreach (var field in fields)
-            { 
-                switch (field.Value)
+            string txt = "";
+            using (Dictionary<string, string>.Enumerator enumerator = fields.GetEnumerator())
+            {
+                while (enumerator.MoveNext())
                 {
-                    case "string":
-                    case "Guid":
-                    case "double":
-                    case "bool": 
-                        txt += "0";
-                        break; 
-                    case "short":
-                    case "int":
-                    case "int?":
-                    case "long":
-                    case "long?":
-                        txt += "1";  
-                        break;
-                    case "decimal":
-                        txt += "2";
-                        break;  
-                    case "DateTime":
-                    case "DateRangeFilter":
-                    case "DateTime?":
-                        txt += "3";
-                        break;  
-                    default:
-                        txt += "0";
-                        break;
-                } 
+                    switch (enumerator.Current.Value)
+                    {
+                        case "string":
+                        case "Guid":
+                        case "double":
+                        case "bool":
+                            txt += "0";
+                            break;
+                        case "short":
+                        case "int":
+                        case "int?":
+                        case "long":
+                        case "long?":
+                            txt += "1";
+                            break;
+                        case "decimal":
+                            txt += "2";
+                            break;
+                        case "DateTime":
+                        case "DateRangeFilter":
+                        case "DateTime?":
+                            txt += "3";
+                            break;
+                        default:
+                            txt += "0";
+                            break;
+                    }
+                }
             }
-
-
             return txt;
         }
 
@@ -122,190 +111,136 @@ namespace nboni.CodeGen
             {
                 return k.ToLower();
             }
-
             return k.Substring(0, 1).ToLower() + k.Substring(1, k.Length - 1);
         }
 
         public static string getHeader(string field, string template)
         {
-            var t = template.Replace("%k%", FirstToLower(field));
-            t = t.Replace("%K%", field) + Environment.NewLine;
-            return t;
+            string t = template.Replace("%k%", FirstToLower(field));
+            return t.Replace("%K%", field) + Environment.NewLine;
         }
 
         public static string JObjectHelper(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt += "jo.Add('" + FirstToLower(field.Key) + "', " + FirstToLower(field.Key) + ");" + Environment.NewLine;
+                txt = txt + "jo.Add('" + FirstToLower(field.Key) + "', " + FirstToLower(field.Key) + ");" + Environment.NewLine;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string JSModel(Dictionary<string, string> fields, string idtype)
         {
-            var txt = "Id: 0,";
-            
-            if(idtype == "Guid")
+            string txt = "id: 0,";
+            if (idtype == "Guid")
             {
-                txt = "Id: '00000000-0000-0000-0000-000000000000',";
+                txt = "id: '00000000-0000-0000-0000-000000000000',";
             }
-            
-            if (Program.mycase == "lower")
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt = txt.ToLower();
-            }
-            foreach (var field in fields)
-            {
-                if (Program.mycase == "lower")
+                switch (field.Value)
                 {
-                    switch (field.Value)
-                    {
-                        case "Guid":
-                            txt += Environment.NewLine + field.Key.ToLower() + ": '00000000-0000-0000-0000-000000000000',";
-                            break;  
-                        case "int":
-                        case "long":
-                        case "int?":
-                        case "long?":
-                        case "short":
-                        case "short?":
-                            txt += Environment.NewLine + field.Key.ToLower() + ": 0,";
-                            break;
-                        case "DateRangeFilter":
-                            txt += Environment.NewLine + field.Key.ToLower() + ": '',";
-                            txt += Environment.NewLine + field.Key.ToLower() + "2: '',";
-                            break;
-                        default:
-                            txt += Environment.NewLine + field.Key.ToLower() + ": '',";
-                            break;
-                    }
-
-                }
-                else
-                {
-
-                    switch (field.Value)
-                    {
-                        case "Guid":
-                            txt += Environment.NewLine + FirstToLower(field.Key) + ": '00000000-0000-0000-0000-000000000000',";
-                            break;
-                        case "int":
-                        case "long":
-                        case "int?":
-                        case "long?":
-                        case "short":
-                        case "short?":
-                            txt += Environment.NewLine + FirstToLower(field.Key) + ": 0,";
-                            break;
-                        case "DateRangeFilter":
-                            txt += Environment.NewLine + FirstToLower(field.Key) + ": '',";
-                            txt += Environment.NewLine + FirstToLower(field.Key) + "2: '',";
-                            break;
-                        default:
-                            txt += Environment.NewLine + FirstToLower(field.Key) + ": '',";
-                            break;
-                    } 
+                    case "Guid":
+                        txt = txt + Environment.NewLine + FirstToLower(field.Key) + ": '00000000-0000-0000-0000-000000000000',";
+                        break;
+                    case "int":
+                    case "long":
+                    case "int?":
+                    case "long?":
+                    case "short":
+                    case "short?":
+                        txt = txt + Environment.NewLine + FirstToLower(field.Key) + ": 0,";
+                        break;
+                    case "DateRangeFilter":
+                        txt = txt + Environment.NewLine + FirstToLower(field.Key) + ": '',";
+                        txt = txt + Environment.NewLine + FirstToLower(field.Key) + "2: '',";
+                        break;
+                    default:
+                        txt = txt + Environment.NewLine + FirstToLower(field.Key) + ": '',";
+                        break;
                 }
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string MappingColumns(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt += $"x.Column(y => y.{field.Key}).WithName('{field.Key.ToLower()}');" + Environment.NewLine;
+                txt = txt + "x.Column(y => y." + field.Key + ").WithName('" + field.Key.ToLower() + "');" + Environment.NewLine;
             }
             return txt;
         }
 
         public static string MigrationMapper(Dictionary<string, string> fields)
         {
-            var txt = "";
-
-            //column names
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt += $"builder.Property(o => o.{field.Key}).HasColumnName('{field.Key.ToLower()}'); " + Environment.NewLine;
-
+                txt = txt + "builder.Property(o => o." + field.Key + ").HasColumnName('" + field.Key.ToLower() + "'); " + Environment.NewLine;
             }
             txt += Environment.NewLine;
-
-            //string columns
-            foreach (var field in fields)
+            foreach (KeyValuePair<string, string> field2 in fields)
             {
-                switch (field.Value)
+                string value = field2.Value;
+                string text = value;
+                if (text == "string")
                 {
-                    case "string":
-                        txt += "builder.Property(o => o." + field.Key + ").HasColumnType(\"varchar\").HasMaxLength(128);" + Environment.NewLine;
-                        break;
+                    txt = txt + "builder.Property(o => o." + field2.Key + ").HasColumnType(\"varchar\").HasMaxLength(128);" + Environment.NewLine;
                 }
             }
-
             txt += Environment.NewLine;
-
-            //index id columns
-            foreach (var field in fields)
+            foreach (KeyValuePair<string, string> field3 in fields)
             {
-                if (field.Key.ToLower() == "id")
+                if (field3.Key.ToLower() == "id")
                 {
-                    if (field.Value.ToLower() == "int" || field.Value.ToLower() == "long" || field.Value.ToLower() == "short")
+                    if (!(field3.Value.ToLower() == "int") && !(field3.Value.ToLower() == "long") && !(field3.Value.ToLower() == "short"))
                     {
-                    }
-                    else
-                    {
-                        txt += "builder.Property(o => o.id).HasDefaultValueSql(\"UUID()\"); " + Environment.NewLine;
+                        txt = txt + "builder.Property(o => o.id).HasDefaultValueSql(\"UUID()\"); " + Environment.NewLine;
                     }
                 }
-                else if (field.Key.ToLower().EndsWith("id"))
+                else if (field3.Key.ToLower().EndsWith("id"))
                 {
-                    txt += "builder.HasIndex(o => o." + field.Key + "); " + Environment.NewLine;
+                    txt = txt + "builder.HasIndex(o => o." + field3.Key + "); " + Environment.NewLine;
                 }
-                else { }
             }
             return txt;
         }
+
         public static string ModelVariables(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                if (field.Value.ToLower() == "daterangefilter")
-                {
-                    txt += "model." + field.Key + ".ToDateRangeFilter(),";
-                }
-                else
-                {
-                    txt += "model." + field.Key + ",";
-                }
+                txt = ((!(field.Value.ToLower() == "daterangefilter")) ? (txt + "model." + field.Key + ",") : (txt + "model." + field.Key + ".ToDateRangeFilter(),"));
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
+
         public static string Paginator(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt += FirstToLower(field.Key) + " = ViewBag." + FirstToLower(field.Key) + ", " + Environment.NewLine;
+                txt = txt + FirstToLower(field.Key) + " = ViewBag." + FirstToLower(field.Key) + ", " + Environment.NewLine;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string Params(Dictionary<string, string> fields, int mode = 1)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                var def = "";
-                var fv = field.Value;
-                var nuf = "";
+                string def = "";
+                string fv = field.Value;
+                string nuf = "";
                 switch (field.Value)
                 {
                     case "string":
@@ -341,275 +276,172 @@ namespace nboni.CodeGen
                         fv = field.Value + "?";
                         break;
                 }
-
                 if (field.Value == "DateRangeFilter" && mode == 3)
                 {
-
-                    txt += nuf + " " + FirstToLower(field.Key) + " = " + def + ",";
-                    txt += nuf + " " + FirstToLower(field.Key) + "2 = " + def + ",";
+                    txt = txt + nuf + " " + FirstToLower(field.Key) + " = " + def + ",";
+                    txt = txt + nuf + " " + FirstToLower(field.Key) + "2 = " + def + ",";
                 }
                 else
                 {
-                    txt += fv + " " + FirstToLower(field.Key) + " = " + def + ",";
+                    txt = txt + fv + " " + FirstToLower(field.Key) + " = " + def + ",";
                 }
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string Properties(Dictionary<string, string> fields, int mode = 1)
         {
-            //mode 2 is model
-            //add a string for obkect
-
-            var txt = "";
-            var defstring = " = string.Empty;";
-            foreach (var field in fields)
+            string txt = "";
+            string defstring = " = string.Empty;";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                var def = "";
-                if (field.Value.ToLower() == "string") def = defstring;
-
-                var datatype = field.Value;
+                string def = "";
+                if (field.Value.ToLower() == "string")
+                {
+                    def = defstring;
+                }
+                string datatype = field.Value;
                 if (field.Value.ToLower() == "daterangefilter")
                 {
                     datatype = "DateTime";
                 }
-
-                txt += @"
-        /// <summary>
-        /// 
-        /// </summary>";
-                txt += Environment.NewLine +  
-                    "\t\tpublic " + datatype + " " + field.Key + " { get; set; }" + def + Environment.NewLine + Environment.NewLine;
-
+                txt += "\r\n        /// <summary>\r\n        /// \r\n        /// </summary>";
+                txt = txt + Environment.NewLine + "\t\tpublic " + datatype + " " + field.Key + " { get; set; }" + def + Environment.NewLine + Environment.NewLine;
                 if (field.Value.ToLower() == "daterangefilter" && mode == 3)
                 {
-                    txt += @"
-        /// <summary>
-        /// 
-        /// </summary>";
-                    txt += Environment.NewLine + 
-                        "\t\tpublic " + datatype + " " + field.Key + "2 { get; set; }" + def + Environment.NewLine + Environment.NewLine;
+                    txt += "\r\n        /// <summary>\r\n        /// \r\n        /// </summary>";
+                    txt = txt + Environment.NewLine + "\t\tpublic " + datatype + " " + field.Key + "2 { get; set; }" + def + Environment.NewLine + Environment.NewLine;
                 }
-
                 if (mode == 2)
                 {
                     if (field.Key.EndsWith("Id"))
                     {
-                        var b = field.Key.Substring(0, field.Key.Length - 2) + "Name";
-
-                        txt += @"/// <summary>
-            /// 
-            /// </summary>";
-                        txt += Environment.NewLine + "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
+                        string b = field.Key.Substring(0, field.Key.Length - 2) + "Name";
+                        txt += "/// <summary>\r\n            /// \r\n            /// </summary>";
+                        txt = txt + Environment.NewLine + "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
                     }
-
-
                     if (field.Key.EndsWith("id"))
                     {
-                        var b = field.Key.Substring(0, field.Key.Length - 2) + "name";
-
-                        txt += @"/// <summary>
-            /// 
-            /// </summary>";
-                        txt += Environment.NewLine + "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
+                        string b2 = field.Key.Substring(0, field.Key.Length - 2) + "name";
+                        txt += "/// <summary>\r\n            /// \r\n            /// </summary>";
+                        txt = txt + Environment.NewLine + "\t\tpublic string " + b2 + " { get; set; }" + Environment.NewLine + Environment.NewLine;
                     }
                 }
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
+
         public static string PropertiesNpoco(Dictionary<string, string> fields, int mode = 1)
         {
-            //mode 2 is model
-            //add a string for obkect
-
-            var txt = "";
-            var defstring = " = string.Empty;";
-            foreach (var field in fields)
+            string txt = "";
+            string defstring = " = string.Empty;";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                var def = "";
-                if (field.Value.ToLower() == "string") def = defstring;
-
-                var datatype = field.Value;
+                string def = "";
+                if (field.Value.ToLower() == "string")
+                {
+                    def = defstring;
+                }
+                string datatype = field.Value;
                 if (field.Value.ToLower() == "daterangefilter")
                 {
                     datatype = "DateTime";
                 }
-
-                txt += @"
-        /// <summary>
-        /// 
-        /// </summary>";
-                txt += Environment.NewLine + "\t\t[Column('" + field.Key.ToLower() + "')]" + Environment.NewLine +
-                    "\t\tpublic " + datatype + " " + field.Key + " { get; set; }" + def + Environment.NewLine + Environment.NewLine;
-
+                txt += "\r\n        /// <summary>\r\n        /// \r\n        /// </summary>";
+                txt = txt + Environment.NewLine + "\t\t[Column('" + field.Key.ToLower() + "')]" + Environment.NewLine + "\t\tpublic " + datatype + " " + field.Key + " { get; set; }" + def + Environment.NewLine + Environment.NewLine;
                 if (field.Value.ToLower() == "daterangefilter" && mode == 3)
                 {
-                    txt += @"
-        /// <summary>
-        /// 
-        /// </summary>";
-                    txt += Environment.NewLine + "\t\t[Column('" + field.Key.ToLower() + "')]" + Environment.NewLine +
-                        "\t\tpublic " + datatype + " " + field.Key + "2 { get; set; }" + def + Environment.NewLine + Environment.NewLine;
+                    txt += "\r\n        /// <summary>\r\n        /// \r\n        /// </summary>";
+                    txt = txt + Environment.NewLine + "\t\t[Column('" + field.Key.ToLower() + "')]" + Environment.NewLine + "\t\tpublic " + datatype + " " + field.Key + "2 { get; set; }" + def + Environment.NewLine + Environment.NewLine;
                 }
-
                 if (mode == 2)
                 {
                     if (field.Key.EndsWith("Id"))
                     {
-                        var b = field.Key.Substring(0, field.Key.Length - 2) + "Name";
-
-                        txt += @"/// <summary>
-            /// 
-            /// </summary>";
-                        txt += Environment.NewLine + "\t\t[Column('" + b.ToLower() + "')]" + Environment.NewLine +
-                            "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
+                        string b = field.Key.Substring(0, field.Key.Length - 2) + "Name";
+                        txt += "/// <summary>\r\n            /// \r\n            /// </summary>";
+                        txt = txt + Environment.NewLine + "\t\t[Column('" + b.ToLower() + "')]" + Environment.NewLine + "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
                     }
-
-
                     if (field.Key.EndsWith("id"))
                     {
-                        var b = field.Key.Substring(0, field.Key.Length - 2) + "name";
-
-                        txt += @"/// <summary>
-            /// 
-            /// </summary>";
-                        txt += Environment.NewLine + "\t\t[Column('" + b.ToLower() + "')]" + Environment.NewLine +
-                             "\t\tpublic string " + b + " { get; set; } = string.Empty;" + Environment.NewLine + Environment.NewLine;
+                        string b2 = field.Key.Substring(0, field.Key.Length - 2) + "name";
+                        txt += "/// <summary>\r\n            /// \r\n            /// </summary>";
+                        txt = txt + Environment.NewLine + "\t\t[Column('" + b2.ToLower() + "')]" + Environment.NewLine + "\t\tpublic string " + b2 + " { get; set; } = string.Empty;" + Environment.NewLine + Environment.NewLine;
                     }
                 }
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string Queryable(Dictionary<string, string> fields)
         {
-            var temp1 = @"if (!string.IsNullOrEmpty(%k%))
+            string temp1 = "if (!string.IsNullOrEmpty(%k%))\r\n            {\r\n                table = table.Where(x => x.%K% == %k%);\r\n            }";
+            string temp2 = "if (%k% > 0)\r\n            {\r\n                table = table.Where(x => x.%K% == %k%);\r\n            }";
+            string temp3 = "if (%k%.HasValue)\r\n            {\r\n                var %k%Val =  %k%.GetValueOrDefault();\r\n                table = table.Where(x => x.%K% == %k%Val);\r\n            }";
+            string temp4 = "if (%k%.startdate.HasValue)\r\n            {\r\n                var %k%SdVal =  %k%.startdate.GetValueOrDefault();\r\n                table = table.Where(x => x.%K% >= %k%SdVal);\r\n            }\r\n\r\n            if (%k%.enddate.HasValue)\r\n            {\r\n                var %k%EdVal =  %k%.enddate.GetValueOrDefault().AddDays(1);\r\n                table = table.Where(x => x.%K% < %k%EdVal);\r\n            }";
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                table = table.Where(x => x.%K% == %k%);
-            }";
-            var temp2 = @"if (%k% > 0)
-            {
-                table = table.Where(x => x.%K% == %k%);
-            }";
-            var temp3 = @"if (%k%.HasValue)
-            {
-                var %k%Val =  %k%.GetValueOrDefault();
-                table = table.Where(x => x.%K% == %k%Val);
-            }";
-            var temp4 = @"if (%k%.startdate.HasValue)
-            {
-                var %k%SdVal =  %k%.startdate.GetValueOrDefault();
-                table = table.Where(x => x.%K% >= %k%SdVal);
-            }
-
-            if (%k%.enddate.HasValue)
-            {
-                var %k%EdVal =  %k%.enddate.GetValueOrDefault().AddDays(1);
-                table = table.Where(x => x.%K% < %k%EdVal);
-            }";
-
-
-            var txt = "";
-            foreach (var field in fields)
-            {
-                var temp = "";
+                string temp5 = "";
                 switch (field.Value)
                 {
                     case "string":
-                        temp = temp1;
+                        temp5 = temp1;
                         break;
                     case "int":
                     case "long":
                     case "decimal":
                     case "double":
-                        temp = temp2;
+                        temp5 = temp2;
                         break;
                     case "bool":
                     case "DateTime":
-                        temp = temp3;
+                        temp5 = temp3;
                         break;
                     case "DateRangeFilter":
-                        temp = temp4;
+                        temp5 = temp4;
                         break;
                     default:
-                        temp = temp3;
+                        temp5 = temp3;
                         break;
                 }
-                var t = temp.Replace("%k%", FirstToLower(field.Key));
+                string t = temp5.Replace("%k%", FirstToLower(field.Key));
                 t = t.Replace("%K%", field.Key) + Environment.NewLine;
-
                 txt += t;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string QueryableView(Dictionary<string, string> fields, string formats)
         {
-            var temp1 = @"if (!string.IsNullOrEmpty(%k%))
-            {
-                sql += $' and %K% = @{c} ';
-                AddParam('%k%', %k%);
-                c++;
-            }";
+            string temp1 = "if (!string.IsNullOrEmpty(%k%))\r\n            {\r\n                sql += $' and %K% = @{c} ';\r\n                AddParam('%k%', %k%);\r\n                c++;\r\n            }";
             if (File.Exists(formats + "filter.queryable.string.ini"))
             {
                 temp1 = File.ReadAllText(formats + "filter.queryable.string.ini");
             }
-
-
-            var temp2 = @"if (%k% > 0)
-            {
-                sql += $' and %K% = @{c} ';
-                AddParam('%k%', %k%);
-                c++;
-            }";
+            string temp2 = "if (%k% > 0)\r\n            {\r\n                sql += $' and %K% = @{c} ';\r\n                AddParam('%k%', %k%);\r\n                c++;\r\n            }";
             if (File.Exists(formats + "filter.queryable.number.ini"))
             {
                 temp2 = File.ReadAllText(formats + "filter.queryable.number.ini");
             }
-
-            var temp3 = @"if (%k%.HasValue)
-            {
-                var %k%Val =  %k%.GetValueOrDefault();
-                sql += $' and %K% = @{c} ';
-                AddParam('%k%', %k%Val);
-                c++;
-            }";
-
+            string temp3 = "if (%k%.HasValue)\r\n            {\r\n                var %k%Val =  %k%.GetValueOrDefault();\r\n                sql += $' and %K% = @{c} ';\r\n                AddParam('%k%', %k%Val);\r\n                c++;\r\n            }";
             if (File.Exists(formats + "filter.queryable.nullable.ini"))
             {
                 temp3 = File.ReadAllText(formats + "filter.queryable.nullable.ini");
             }
-
-
-            var temp4 = @"if (%k%.startdate.HasValue)
+            string temp4 = "if (%k%.startdate.HasValue)\r\n            {\r\n                var %k%SdVal =  %k%.startdate.GetValueOrDefault();\r\n                sql += $' and %K% >= @{c} ';\r\n                AddParam('%k%', %k%SdVal);\r\n                c++;\r\n            }\r\n\r\n            if (%k%.enddate.HasValue)\r\n            {\r\n                var %k%EdVal =  %k%.enddate.GetValueOrDefault().AddDays(1);\r\n                sql += $' and %K% < @{c} ';\r\n                AddParam('%k%', %k%EdVal);\r\n                c++;\r\n            }";
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                var %k%SdVal =  %k%.startdate.GetValueOrDefault();
-                sql += $' and %K% >= @{c} ';
-                AddParam('%k%', %k%SdVal);
-                c++;
-            }
-
-            if (%k%.enddate.HasValue)
-            {
-                var %k%EdVal =  %k%.enddate.GetValueOrDefault().AddDays(1);
-                sql += $' and %K% < @{c} ';
-                AddParam('%k%', %k%EdVal);
-                c++;
-            }";
-
-            var txt = "";
-            foreach (var field in fields)
-            {
-                var temp = "";
+                string temp5 = "";
                 switch (field.Value)
                 {
                     case "string":
-                        temp = temp1;
+                        temp5 = temp1;
                         break;
                     case "int":
                     case "short":
@@ -617,235 +449,167 @@ namespace nboni.CodeGen
                     case "tinyint":
                     case "decimal":
                     case "double":
-                        temp = temp2;
+                        temp5 = temp2;
                         break;
                     case "bool":
                     case "DateTime":
-                        temp = temp3;
+                        temp5 = temp3;
                         break;
                     case "DateRangeFilter":
-                        temp = temp4;
+                        temp5 = temp4;
                         break;
                     default:
-                        temp = temp3;
+                        temp5 = temp3;
                         break;
                 }
-                var t = temp.Replace("%k%", FirstToLower(field.Key));
+                string t = temp5.Replace("%k%", FirstToLower(field.Key));
                 t = t.Replace("%K%", field.Key) + Environment.NewLine;
-
                 txt += t;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string QueryJoins(Dictionary<string, string> fields)
         {
             int cnt = 1;
-            var txt = "";
-
-            var joina = "";
-            foreach (var field in fields)
+            string txt = "";
+            string joina = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                var fx = field.Key.ToLower();
+                string fx = field.Key.ToLower();
                 if (fx.EndsWith("id"))
                 {
-                    var b = fx.Substring(0, field.Key.Length - 2) + "name";
-
-                    joina += "LEFT JOIN <JOINTABLE> x" + cnt + " ON  x" + cnt + ".<JOINID> = w." + fx + Environment.NewLine;
+                    string b = fx.Substring(0, field.Key.Length - 2) + "name";
+                    joina = joina + "LEFT JOIN <JOINTABLE> x" + cnt + " ON  x" + cnt + ".<JOINID> = w." + fx + Environment.NewLine;
                     cnt++;
                 }
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim).ToLower() + Environment.NewLine + joina;
         }
 
         public static string QueryString(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt += FirstToLower(field.Key) + " = " + FirstToLower(field.Key) + ", " + Environment.NewLine;
+                txt = txt + FirstToLower(field.Key) + " = " + FirstToLower(field.Key) + ", " + Environment.NewLine;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string SaveFields(Dictionary<string, string> fields, string formats)
         {
-            var temp1 = @"<div class='form-group col-sm-12 col-md-6 col-lg-3'>
-                            @Html.LabelFor(model => model.%K%, htmlAttributes: new { @class = 'req control-label' })
-                            @Html.EditorFor(model => model.%K%, new { htmlAttributes = new { @class = 'form-control' } })
-                        </div> ";
+            string temp1 = "<div class='form-group col-sm-12 col-md-6 col-lg-3'>\r\n                            @Html.LabelFor(model => model.%K%, htmlAttributes: new { @class = 'req control-label' })\r\n                            @Html.EditorFor(model => model.%K%, new { htmlAttributes = new { @class = 'form-control' } })\r\n                        </div> ";
             try
             {
                 temp1 = File.ReadAllText(formats + "saveformitem.ini");
             }
             catch
             {
-                temp1 = @"<div class='form-group col-sm-12 col-md-6 col-lg-3'>
-                            @Html.LabelFor(model => model.%K%, htmlAttributes: new { @class = 'req control-label' })
-                            @Html.EditorFor(model => model.%K%, new { htmlAttributes = new { @class = 'form-control' } })
-                        </div> ";
+                temp1 = "<div class='form-group col-sm-12 col-md-6 col-lg-3'>\r\n                            @Html.LabelFor(model => model.%K%, htmlAttributes: new { @class = 'req control-label' })\r\n                            @Html.EditorFor(model => model.%K%, new { htmlAttributes = new { @class = 'form-control' } })\r\n                        </div> ";
             }
-
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                if (Program.mycase == "lower")
-                {
-                    txt += temp1.Replace("%K%", field.Key) + Environment.NewLine;
-                }
-                else
-                {
-                    txt += temp1.Replace("%K%", FirstToLower(field.Key)) + Environment.NewLine;
-                }
+                string t0 = temp1.Replace("%K%", field.Key);
+                txt = txt + t0.Replace("%k%", FirstToLower(field.Key)) + Environment.NewLine;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string SearchFields(Dictionary<string, string> fields, string formats)
         {
-            var temp1 = @" 
-                        <div class='form-group'>
-                            <label>%K%</label>
-                            <input type='text' name='%k%' id='%k%' value='@ViewBag.%k%' placeholder='%K%' class='form-control'>
-                        </div>
-                   ";
-
-            var temp3 = @" 
-                        <div class='form-group'>
-                            <label>%K%</label>
-                            <input type='text' name='%k%2' id='%k%2' value='@ViewBag.%k%2' placeholder='%K%2' class='form-control'>
-                        </div>
-                   ";
+            string temp1 = " \r\n                        <div class='form-group'>\r\n                            <label>%K%</label>\r\n                            <input type='text' name='%k%' id='%k%' value='@ViewBag.%k%' placeholder='%K%' class='form-control'>\r\n                        </div>\r\n                   ";
+            string temp3 = " \r\n                        <div class='form-group'>\r\n                            <label>%K%</label>\r\n                            <input type='text' name='%k%2' id='%k%2' value='@ViewBag.%k%2' placeholder='%K%2' class='form-control'>\r\n                        </div>\r\n                   ";
             try
             {
-                temp1 = File.ReadAllText(formats + "indexformitem.ini"); 
+                temp1 = File.ReadAllText(formats + "indexformitem.ini");
                 temp3 = File.ReadAllText(formats + "indexformitem3.ini");
             }
             catch
             {
-                temp1 = @" 
-                        <div class='form-group'>
-                            <label>%K%</label>
-                            <input type='text' name='%k%' id='%k%' value='@ViewBag.%k%' placeholder='%K%' class='form-control'>
-                        </div>
-                   ";
+                temp1 = " \r\n                        <div class='form-group'>\r\n                            <label>%K%</label>\r\n                            <input type='text' name='%k%' id='%k%' value='@ViewBag.%k%' placeholder='%K%' class='form-control'>\r\n                        </div>\r\n                   ";
             }
-
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                var fk = field.Key;
+                string fk = field.Key;
                 if (Program.mycase != "lower")
                 {
                     fk = FirstToLower(fk);
                 }
-                var t = "";
-                var t3 = "";
-
+                string t = "";
+                string t3 = "";
                 if (field.Value == "DateRangeFilter")
                 {
                     t = temp1.Replace("%k%", FirstToLower(fk));
                     t = t.Replace("%K%", fk) + Environment.NewLine;
-
                     t3 = temp3.Replace("%k%", FirstToLower(fk));
-                    t3= t3.Replace("%K%", fk) + Environment.NewLine;
+                    t3 = t3.Replace("%K%", fk) + Environment.NewLine;
                 }
                 else
                 {
                     t = temp1.Replace("%k%", FirstToLower(fk));
                     t = t.Replace("%K%", fk) + Environment.NewLine;
                 }
-                txt += t + t3;
+                txt = txt + t + t3;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string TableColumns(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-
-                if (Program.mycase == "lower")
-                {
-                    txt += Environment.NewLine + "{'data': '" + field.Key.ToLower() + "' },";
-                }
-                else
-                {
-                    txt += Environment.NewLine + "{'data': '" + FirstToLower(field.Key) + "' },";
-
-                }
-
+                txt = txt + Environment.NewLine + "{'data': '" + FirstToLower(field.Key) + "' },";
             }
-
-            if (Program.mycase == "lower")
-            {
-                txt += Environment.NewLine + "{'data': 'recordstatustext' },";
-                txt += Environment.NewLine + "{'data': 'createdat' },";
-                txt += Environment.NewLine + "{'data': 'updatedat' },";
-            }
-            else
-            {
-                txt += Environment.NewLine + "{'data': 'RecordStatusText' },";
-                txt += Environment.NewLine + "{'data': 'CreatedAt' },";
-                txt += Environment.NewLine + "{'data': 'UpdatedAt' },";
-
-            }
-
-            char[] trim = { ',' };
+            txt = txt + Environment.NewLine + "{'data': 'recordStatus' },";
+            txt = txt + Environment.NewLine + "{'data': 'createdAt' },";
+            txt = txt + Environment.NewLine + "{'data': 'updatedAt' },";
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string TableHeader(Dictionary<string, string> fields)
         {
-            var temp1 = @" <th>%K%</th> ";
-
-            var txt = "";
-            foreach (var field in fields)
+            string temp1 = " <th>%K%</th> ";
+            string txt = "";
+            foreach (KeyValuePair<string, string> field2 in fields)
             {
-                txt += getHeader(field.Key, temp1);
+                txt += getHeader(field2.Key, temp1);
             }
             txt += getHeader("Status", temp1);
             txt += getHeader("Created", temp1);
             txt += getHeader("Updated", temp1);
-
-
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string TableParams(Dictionary<string, string> _fields, string idType, string db)
         {
-            var txt = "";
-
-            var _id = "Id";
-
+            string txt = "";
+            string _id = "Id";
             if (Program.mycase == "lower")
             {
                 _id = "id";
             }
-
-            var fields = new Dictionary<string, string>
-            {
-                { _id, idType }
-            };
-
-            foreach (var _f in _fields)
+            Dictionary<string, string> fields = new Dictionary<string, string> { { _id, idType } };
+            foreach (KeyValuePair<string, string> _f in _fields)
             {
                 fields.Add(_f.Key, _f.Value);
             }
-
             if (db == "SQLSERVER")
             {
-                foreach (var field in fields)
+                foreach (KeyValuePair<string, string> field in fields)
                 {
-                    var def = "";
-                    var fv = field.Value;
+                    string def = "";
+                    string fv = field.Value;
                     switch (field.Value)
                     {
                         case "string":
@@ -885,188 +649,153 @@ namespace nboni.CodeGen
                         case "DateTime?":
                             def = "datetime NULL";
                             break;
-
                         default:
                             def = field.Value;
                             break;
                     }
-
-                    if (field.Key.ToLower() == "id")
+                    if (field.Key.ToLower() == "id" && (field.Value.ToLower() == "int" || field.Value.ToLower() == "long" || field.Value.ToLower() == "short"))
                     {
-                        if (field.Value.ToLower() == "int" || field.Value.ToLower() == "long" || field.Value.ToLower() == "short")
-                        {
-
-                            def += " NOT NULL IDENTITY(1,1)";
-
-                        }
+                        def += " NOT NULL IDENTITY(1,1)";
                     }
-
-                    txt += "'" + field.Key.ToLower() + "' " + def + "," + Environment.NewLine;
+                    txt = txt + "'" + field.Key.ToLower() + "' " + def + "," + Environment.NewLine;
                 }
             }
-
             if (db == "MYSQL")
             {
-                foreach (var field in fields)
+                foreach (KeyValuePair<string, string> field2 in fields)
                 {
-                    var def = "";
-                    var fv = field.Value;
-                    switch (field.Value)
+                    string def2 = "";
+                    string fv2 = field2.Value;
+                    switch (field2.Value)
                     {
                         case "string":
-                            def = "varchar(128) NULL";
+                            def2 = "varchar(128) NULL";
                             break;
                         case "Guid":
-                            def = "CHAR(36)";
+                            def2 = "CHAR(36)";
                             break;
                         case "short":
-                            def = "tinyint";
+                            def2 = "tinyint";
                             break;
                         case "int":
-                            def = "int";
+                            def2 = "int";
                             break;
                         case "int?":
-                            def = "int NULL";
+                            def2 = "int NULL";
                             break;
                         case "decimal":
-                            def = "decimal(18,2) NOT NULL";
+                            def2 = "decimal(18,2) NOT NULL";
                             break;
                         case "long":
-                            def = "bigint";
+                            def2 = "bigint";
                             break;
                         case "long?":
-                            def = "bigint NULL";
+                            def2 = "bigint NULL";
                             break;
                         case "double":
-                            def = "float NOT NULL";
+                            def2 = "float NOT NULL";
                             break;
                         case "bool":
-                            def = "bit NOT NULL";
+                            def2 = "bit NOT NULL";
                             break;
                         case "DateTime":
                         case "DateRangeFilter":
-                            def = "datetime NOT NULL";
+                            def2 = "datetime NOT NULL";
                             break;
                         case "DateTime?":
-                            def = "datetime NULL";
+                            def2 = "datetime NULL";
                             break;
-
                         default:
-                            def = field.Value;
+                            def2 = field2.Value;
                             break;
                     }
-
-                    if (field.Key.ToLower() == "id")
+                    if (field2.Key.ToLower() == "id" && (field2.Value.ToLower() == "int" || field2.Value.ToLower() == "long" || field2.Value.ToLower() == "short"))
                     {
-                        if (field.Value.ToLower() == "int" || field.Value.ToLower() == "long" || field.Value.ToLower() == "short")
-                        {
-
-                            def += " NOT NULL AUTO_INCREMENT";
-
-                        }
+                        def2 += " NOT NULL AUTO_INCREMENT";
                     }
-
-                    txt += "" + field.Key.ToLower() + " " + def + "," + Environment.NewLine;
+                    txt = txt + field2.Key.ToLower() + " " + def2 + "," + Environment.NewLine;
                 }
             }
-
             if (db == "POSTGRES")
             {
-                foreach (var field in fields)
+                foreach (KeyValuePair<string, string> field3 in fields)
                 {
-                    var def = "";
-                    var fv = field.Value;
-                    switch (field.Value)
+                    string def3 = "";
+                    string fv3 = field3.Value;
+                    switch (field3.Value)
                     {
                         case "string":
-                            def = "character varying(128)";
+                            def3 = "character varying(128)";
                             break;
                         case "Guid":
-                            def = "uuid";
+                            def3 = "uuid";
                             break;
                         case "short":
-                            def = "smallint";
+                            def3 = "smallint";
                             break;
                         case "int":
-                            def = "integer";
+                            def3 = "integer";
                             break;
                         case "int?":
-                            def = "integerv NULL";
+                            def3 = "integerv NULL";
                             break;
                         case "decimal":
-                            def = "decimal(18,2) NOT NULL";
+                            def3 = "decimal(18,2) NOT NULL";
                             break;
                         case "long":
-                            def = "bigint";
+                            def3 = "bigint";
                             break;
                         case "long?":
-                            def = "bigint NULL";
+                            def3 = "bigint NULL";
                             break;
                         case "double":
-                            def = "double precision";
+                            def3 = "double precision";
                             break;
                         case "bool":
-                            def = "boolean";
+                            def3 = "boolean";
                             break;
                         case "bool?":
-                            def = "boolean NULL";
+                            def3 = "boolean NULL";
                             break;
                         case "DateTime":
                         case "DateRangeFilter":
-                            def = "timestamp without time zone";
+                            def3 = "timestamp without time zone";
                             break;
                         case "DateTime?":
-                            def = "timestamp without time zone NULL";
+                            def3 = "timestamp without time zone NULL";
                             break;
-
                         default:
-                            def = field.Value;
+                            def3 = field3.Value;
                             break;
                     }
-
-                    if (field.Key.ToLower() == "id")
+                    if (field3.Key.ToLower() == "id")
                     {
-                        if (field.Value.ToLower() == "int")
+                        if (field3.Value.ToLower() == "int")
                         {
-
-                            def = "serial NOT NULL";
-
+                            def3 = "serial NOT NULL";
                         }
-
-                        if (field.Value.ToLower() == "long")
+                        if (field3.Value.ToLower() == "long")
                         {
-
-                            def = "bigserial NOT NULL";
-
+                            def3 = "bigserial NOT NULL";
                         }
-
-                        if (field.Value.ToLower() == "short")
+                        if (field3.Value.ToLower() == "short")
                         {
-
-                            def = "smallserial NOT NULL";
-
+                            def3 = "smallserial NOT NULL";
                         }
                     }
-
-                    txt += "\t" + field.Key.ToLower() + " " + def + "," + Environment.NewLine;
+                    txt = txt + "\t" + field3.Key.ToLower() + " " + def3 + "," + Environment.NewLine;
                 }
             }
-
-
             return txt;
         }
 
         public static string TableRow(Dictionary<string, string> fields)
         {
-            var temp1 = @"  <td data-label='%K%'>
-                                        @Html.DisplayFor(modelItem => item.%K%)
-                                    </td >";
-
-            var txt = "";
-            foreach (var field in fields)
+            string temp1 = "  <td data-label='%K%'>\r\n                                        @Html.DisplayFor(modelItem => item.%K%)\r\n                                    </td >";
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                var t = "";
-
+                string t = "";
                 if (Program.mycase == "lower")
                 {
                     t = temp1.Replace("%k%", field.Key.ToLower());
@@ -1077,19 +806,15 @@ namespace nboni.CodeGen
                     t = temp1.Replace("%k%", FirstToLower(field.Key));
                     t = t.Replace("%K%", field.Key) + Environment.NewLine;
                 }
-
-
-
                 txt += t;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static Dictionary<string, string> Transform(string v4)
         {
-            //"FIELD:TYPE;"
-            var fields = new Dictionary<string, string>();
+            Dictionary<string, string> fields = new Dictionary<string, string>();
             try
             {
                 if (string.IsNullOrEmpty(v4))
@@ -1097,128 +822,161 @@ namespace nboni.CodeGen
                     fields.Add("name", "string");
                     return fields;
                 }
-                char[] sep1 = { ';' };
-
-                var bit1 = v4.Split(sep1, StringSplitOptions.RemoveEmptyEntries);
-                if (bit1.Length <= 0) return fields;
-                char[] sep2 = { ':' };
-
-                foreach (var bit in bit1)
+                char[] sep1 = new char[1] { ';' };
+                string[] bit1 = v4.Split(sep1, StringSplitOptions.RemoveEmptyEntries);
+                if (bit1.Length == 0)
                 {
-                    var bit2 = bit.Split(sep2, StringSplitOptions.RemoveEmptyEntries);
-                    if (bit2.Count() == 1)
+                    return fields;
+                }
+                char[] sep2 = new char[1] { ':' };
+                string[] array = bit1;
+                foreach (string bit2 in array)
+                {
+                    string[] bit3 = bit2.Split(sep2, StringSplitOptions.RemoveEmptyEntries);
+                    if (bit3.Count() == 1)
                     {
-                        fields.Add(bit2[0], "string");
+                        fields.Add(bit3[0], "string");
                     }
-
-                    if (bit2.Count() == 2)
+                    if (bit3.Count() == 2)
                     {
-                        fields.Add(bit2[0], bit2[1]);
+                        fields.Add(bit3[0], bit3[1]);
                     }
                 }
             }
-            catch { }
+            catch
+            {
+            }
             return fields;
         }
+
         public static string UpperVariables(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field2 in fields)
             {
-                txt += field.Key + ",";
+                txt = txt + field2.Key + ",";
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string Variables(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
-            { 
-                txt += FirstToLower(field.Key) + ",";
+            string txt = "";
+            foreach (KeyValuePair<string, string> field2 in fields)
+            {
+                txt = txt + FirstToLower(field2.Key) + ",";
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string Variables3(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                if (field.Value == "DateRangeFilter")
-                {
-
-                    txt += "new DateRangeFilter(){ startdate = " + FirstToLower(field.Key) + ", enddate = " + FirstToLower(field.Key) + "2 },";
-                }
-                else
-                {
-                    txt += FirstToLower(field.Key) + ",";
-                }
+                txt = ((!(field.Value == "DateRangeFilter")) ? (txt + FirstToLower(field.Key) + ",") : (txt + "new DateRangeFilter(){ startdate = " + FirstToLower(field.Key) + ", enddate = " + FirstToLower(field.Key) + "2 },"));
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
+
         public static string Variables(Dictionary<string, string> fields, string dot)
         {
             int cnt = 1;
-            var txt = "";
-
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt += dot + "." + field.Key.ToLower() + ",";
-
-                var fx = field.Key.ToLower();
+                txt = txt + dot + "." + field.Key.ToLower() + ",";
+                string fx = field.Key.ToLower();
                 if (fx.EndsWith("id"))
                 {
-                    var b = fx.Substring(0, field.Key.Length - 2) + "name";
-
-                    txt += "x" + cnt + ".<JOINFIELD> as " + b + ",";
+                    string b = fx.Substring(0, field.Key.Length - 2) + "name";
+                    txt = txt + "x" + cnt + ".<JOINFIELD> as " + b + ",";
                     cnt++;
                 }
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim).ToLower();
         }
+
         public static string ViewBag(Dictionary<string, string> fields)
         {
-            var txt = "";
-            foreach (var field in fields)
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
             {
-                txt += "ViewBag." + FirstToLower(field.Key) + " = " + FirstToLower(field.Key) + ";" + Environment.NewLine;
+                txt = txt + "ViewBag." + FirstToLower(field.Key) + " = " + FirstToLower(field.Key) + ";" + Environment.NewLine;
             }
-            char[] trim = { ',' };
+            char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string ID_Query(string idtype)
         {
-            if (idtype.ToLower() == "guid") return " id is not null ";
-            else return " id > 0 ";
+            if (idtype.ToLower() == "guid")
+            {
+                return " id is not null ";
+            }
+            return " id > 0 ";
         }
 
         public static string ID_Param(string idtype)
         {
-            if (idtype.ToLower() == "guid") return " Guid? id = null";
-            else return " %T% id = 0";
+            if (idtype.ToLower() == "guid")
+            {
+                return " Guid? id = null";
+            }
+            return " %T% id = 0";
         }
+
         public static string ID_Filter(string idtype)
         {
-            if (idtype.ToLower() == "guid") return "id != null";
-            else return "id > 0";
+            if (idtype.ToLower() == "guid")
+            {
+                return "id != null";
+            }
+            return "id > 0";
         }
 
         public static string ID_Generate(string idtype)
         {
-            if (idtype.ToLower() == "guid") return "entity.id = Guid.NewGuid()";
-            else return "entity.id = 0";
+            if (idtype.ToLower() == "guid")
+            {
+                return "entity.id = Guid.NewGuid()";
+            }
+            return "entity.id = 0";
         }
+
         public static string ID_Setup(string idtype)
         {
-            if (idtype.ToLower() == "guid") return "false";
-            else return "true";
+            if (idtype.ToLower() == "guid")
+            {
+                return "false";
+            }
+            return "true";
+        }
+
+
+        public static string ID_Default(string idtype)
+        {
+            if (idtype.ToLower() == "guid")
+            {
+                return "Guid.NewGuid()";
+            }
+            if (idtype.ToLower() == "datetime")
+            {
+                return "DateTime.Today";
+            }
+            if (idtype.ToLower() == "string")
+            {
+                return "''";
+            }
+            if (idtype.ToLower() == "decimal")
+            {
+                return "0m";
+            }
+            return "0"; 
         }
     }
-
 }

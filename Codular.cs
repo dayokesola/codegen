@@ -11,20 +11,35 @@ namespace nboni.CodeGen
     public class Codular
     {
         private string basepath;
+
         private string classname;
+
         private string classnameplural;
+
         private string idtype;
+
         private string cqrsname;
+
         private string cqrscmd;
+
         private string cqrsmethod;
+
         private string fieldstext;
+
         private string mycase;
+
         private string genfile;
+
         private string formats;
-        private string module; 
+
+        private string module;
+
         private string workspace;
+
         private StringBuilder code;
+
         private Dictionary<string, string> fields;
+
         internal void SetArgs(string[] args)
         {
             classname = args[1];
@@ -44,30 +59,21 @@ namespace nboni.CodeGen
             classnameplural = args[2];
             idtype = args[3];
             fieldstext = args[4];
-            char[] sep2 = { ':', ';' };
-            var bits = fieldstext.Split(sep2, StringSplitOptions.RemoveEmptyEntries);
-
+            char[] sep2 = new char[2] { ':', ';' };
+            string[] bits = fieldstext.Split(sep2, StringSplitOptions.RemoveEmptyEntries);
             cqrsname = bits[0];
             cqrscmd = bits[1];
             cqrsmethod = bits[2];
-
             module = args[5];
             mycase = args[6];
             genfile = args[7];
         }
 
-        public Codular()
-        {
-
-        } 
-
-       
         internal string Generate(string _basepath, string _formats)
-        { 
+        {
             code = new StringBuilder();
-            basepath = _basepath; 
-            formats = _formats; 
-
+            basepath = _basepath;
+            formats = _formats;
             GenerateEntity();
             GenerateModel();
             GenerateForm();
@@ -76,7 +82,7 @@ namespace nboni.CodeGen
             GenerateFactoryService();
             GenerateDbContext();
             GenerateEntityRepository();
-            GenerateRepositoryService(true);
+            GenerateRepositoryService();
             GenerateService();
             GenerateServiceModule();
             GenerateAPIController();
@@ -86,7 +92,6 @@ namespace nboni.CodeGen
             GenerateSaveView();
             GenerateIndexView();
             File.WriteAllText(basepath, code.ToString());
-
             return code.ToString();
         }
 
@@ -97,6 +102,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%ID_FLT%", Stringer.ID_Filter(idtype));
             txt = txt.Replace("%ID_INIT%", Stringer.ID_Generate(idtype));
             txt = txt.Replace("%ID_AUTO%", Stringer.ID_Setup(idtype));
+            txt = txt.Replace("%ID_DEF%", Stringer.ID_Default(idtype));
             txt = txt.Replace("%H%", classname);
             txt = txt.Replace("%N%", classnameplural);
             txt = txt.Replace("%T%", idtype);
@@ -142,7 +148,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%MC%", Stringer.MappingColumns(fields));
             txt = txt.Replace("%FDL%", Stringer.FieldDataList(fields));
             txt = txt.Replace("%FDC%", Stringer.FieldDataCode(fields));
-            txt = txt.Replace("'", "\""); 
+            txt = txt.Replace("'", "\"");
             txt = txt.Replace("`", "'");
             code.AppendLine(title);
             code.AppendLine(txt);
@@ -152,118 +158,123 @@ namespace nboni.CodeGen
         }
 
         private void GenerateRepositoryService(bool context = true)
-        { 
-            var ct = "_context";
-            if (!context) ct = "";
-            var txt = File.ReadAllText(formats + "reposervice.ini");
-            txt = txt.Replace("%CT%", ct); 
+        {
+            string ct = "_context";
+            if (!context)
+            {
+                ct = "";
+            }
+            string txt = File.ReadAllText(formats + "reposervice.ini");
+            txt = txt.Replace("%CT%", ct);
             Paint(txt, "REPOSITORY SERVICE");
         }
 
         private void GenerateEntityRepository()
         {
-            var txt = File.ReadAllText(formats + "entityrepo.ini");
+            string txt = File.ReadAllText(formats + "entityrepo.ini");
             Paint(txt, "ENTITY REPOSITORY");
         }
 
         private void GenerateDbContext()
         {
-            var txt = File.ReadAllText(formats + "dbcontext.ini");
+            string txt = File.ReadAllText(formats + "dbcontext.ini");
             Paint(txt, "DB CONTEXT");
         }
 
         private void GenerateFactoryService()
         {
-            code.AppendLine(""); 
-            var txt = File.ReadAllText(formats + "factoryservice.ini"); 
-            Paint(txt, "FACTORY SERVICE"); 
+            code.AppendLine("");
+            string txt = File.ReadAllText(formats + "factoryservice.ini");
+            Paint(txt, "FACTORY SERVICE");
         }
 
         private void GenerateModelFactory()
-        { 
-            var txt = File.ReadAllText(formats + "modelfactory.ini"); 
+        {
+            string txt = File.ReadAllText(formats + "modelfactory.ini");
             Paint(txt, "MODEL FACTORY");
         }
 
         private void GenerateAutoMapper()
-        {  
-            var txt = File.ReadAllText(formats + "automapper.ini"); 
+        {
+            string txt = File.ReadAllText(formats + "automapper.ini");
             Paint(txt, "AUTOMAPPER CONFIG");
         }
 
         private void GenerateEntity()
-        { 
-            var txt = File.ReadAllText(formats + "entity.ini"); 
+        {
+            string txt = File.ReadAllText(formats + "entity.ini");
             Paint(txt, "ENTITY");
         }
 
         private void GenerateForm()
-        { 
-            var txt = File.ReadAllText(formats + "form.ini"); 
+        {
+            string txt = File.ReadAllText(formats + "form.ini");
             Paint(txt, "FORM");
         }
 
         private void GenerateModel()
-        {  
-            var txt = File.ReadAllText(formats + "model.ini"); 
-            Paint(txt, "MODEL"); 
+        {
+            string txt = File.ReadAllText(formats + "model.ini");
+            Paint(txt, "MODEL");
         }
 
         private void GenerateService()
-        { 
-            var txt = File.ReadAllText(formats + "service.ini"); 
+        {
+            string txt = File.ReadAllText(formats + "service.ini");
             Paint(txt, "SERVICE");
         }
 
         private void GenerateServiceModule()
-        { 
-            var txt = File.ReadAllText(formats + "servicemodule.ini"); 
+        {
+            string txt = File.ReadAllText(formats + "servicemodule.ini");
             Paint(txt, "SERVICE MODULE");
         }
 
         private void GenerateAPIController()
-        {               
-            var txt = File.ReadAllText(formats + "apicontroller.ini"); 
+        {
+            string txt = File.ReadAllText(formats + "apicontroller.ini");
             Paint(txt, "API CONTROLLER");
         }
-        
+
         private void GenerateAPILibrary()
         {
-            var txt = File.ReadAllText(formats + "apilibrary.ini");  
+            string txt = File.ReadAllText(formats + "apilibrary.ini");
             Paint(txt, "API Library Service");
         }
-        
+
         private void GenerateAPILibraryRepository()
         {
-            var txt = File.ReadAllText(formats + "apilibraryrepo.ini");   
+            string txt = File.ReadAllText(formats + "apilibraryrepo.ini");
             Paint(txt, "API Library MODULE");
         }
-        
+
         private void GenerateMVCController()
         {
-            var txt = File.ReadAllText(formats + "mvccontroller.ini");   
+            string txt = File.ReadAllText(formats + "mvccontroller.ini");
             Paint(txt, "MVC CONTROLLER");
         }
-        
+
         private void GenerateSaveView()
         {
-            var txt = File.ReadAllText(formats + "saveview.ini");  
+            string txt = File.ReadAllText(formats + "saveview.ini");
             Paint(txt, "SAVE VIEW");
         }
-        
+
         private void GenerateIndexView()
         {
-            var txt = File.ReadAllText(formats + "indexview.ini");   
+            string txt = File.ReadAllText(formats + "indexview.ini");
             Paint(txt, "INDEX VIEW");
         }
+
         private void GenerateCQRS()
         {
-            var txt = File.ReadAllText(formats + "cqrs.ini");
+            string txt = File.ReadAllText(formats + "cqrs.ini");
             PaintCQRS(txt, "CQRS VIEW");
         }
+
         private void GenerateCQRSAPIController()
         {
-            var txt = File.ReadAllText(formats + "apicontroller.ini");
+            string txt = File.ReadAllText(formats + "apicontroller.ini");
             PaintCQRS(txt, "API COntroller");
         }
 
@@ -272,18 +283,14 @@ namespace nboni.CodeGen
             code = new StringBuilder();
             basepath = _basepath;
             formats = _formats;
-
             GenerateCQRS();
             GenerateCQRSAPIController();
-
             File.WriteAllText(basepath, code.ToString());
-
             return code.ToString();
         }
 
-
         private void PaintCQRS(string txt, string title = "")
-        { 
+        {
             txt = txt.Replace("%H%", classname);
             txt = txt.Replace("%N%", classnameplural);
             txt = txt.Replace("%CN%", cqrsname);
@@ -293,7 +300,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%Z%", module);
             txt = txt.Replace("%z%", module.ToLower());
             txt = txt.Replace("%h%", classname.ToLower());
-            txt = txt.Replace("%n%", classnameplural.ToLower()); 
+            txt = txt.Replace("%n%", classnameplural.ToLower());
             txt = txt.Replace("%cn%", cqrsname.ToLower());
             txt = txt.Replace("'", "\"");
             txt = txt.Replace("`", "'");
@@ -304,5 +311,6 @@ namespace nboni.CodeGen
             code.AppendLine("");
         }
     }
+
 
 }
