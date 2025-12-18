@@ -111,6 +111,7 @@ namespace nboni.CodeGen
             txt = txt.Replace("%h%", classname.ToLower());
             txt = txt.Replace("%n%", classnameplural.ToLower());
             txt = txt.Replace("%Y%", workspace);
+            txt = txt.Replace("%y%", workspace.ToLower());
             txt = txt.Replace("%Z1%", workspace);
             txt = txt.Replace("%P%", Stringer.Params(fields));
             txt = txt.Replace("%P3%", Stringer.Params(fields, 3));

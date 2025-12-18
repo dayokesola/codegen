@@ -96,7 +96,7 @@ namespace nboni.CodeGen
             var moduleName = GetArg(5);
             var crudCase = GetArg(6);
             var output = GetArg(7);
-            var workspace = GetArg(8);
+            //var workspace = GetArg(8);
 
  
     
@@ -132,6 +132,9 @@ namespace nboni.CodeGen
             Say();
             Say();
             Say("REST parameters:");
+            Say("----------------");
+            Say("class Name:\tName of the Entity - User");
+            Say("class Name Plural:\tName of the Entity in Plural form - Users");
 
 
         }
