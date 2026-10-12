@@ -319,13 +319,13 @@ namespace nboni.CodeGen
                     {
                         string b = field.Key.Substring(0, field.Key.Length - 2) + "Name";
                         txt += "/// <summary>\r\n            /// \r\n            /// </summary>";
-                        txt = txt + Environment.NewLine + "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
+                        txt = txt + Environment.NewLine + "\t\tpublic string " + b + " { get; set; } = string.Empty;" + Environment.NewLine + Environment.NewLine;
                     }
                     if (field.Key.EndsWith("id"))
                     {
                         string b2 = field.Key.Substring(0, field.Key.Length - 2) + "name";
                         txt += "/// <summary>\r\n            /// \r\n            /// </summary>";
-                        txt = txt + Environment.NewLine + "\t\tpublic string " + b2 + " { get; set; }" + Environment.NewLine + Environment.NewLine;
+                        txt = txt + Environment.NewLine + "\t\tpublic string " + b2 + " { get; set; } = string.Empty;" + Environment.NewLine + Environment.NewLine;
                     }
                 }
             }
@@ -362,7 +362,7 @@ namespace nboni.CodeGen
                     {
                         string b = field.Key.Substring(0, field.Key.Length - 2) + "Name";
                         txt += "/// <summary>\r\n            /// \r\n            /// </summary>";
-                        txt = txt + Environment.NewLine + "\t\t[Column('" + b.ToLower() + "')]" + Environment.NewLine + "\t\tpublic string " + b + " { get; set; }" + Environment.NewLine + Environment.NewLine;
+                        txt = txt + Environment.NewLine + "\t\t[Column('" + b.ToLower() + "')]" + Environment.NewLine + "\t\tpublic string " + b + " { get; set; } = string.Empty;" + Environment.NewLine + Environment.NewLine;
                     }
                     if (field.Key.EndsWith("id"))
                     {
@@ -562,31 +562,50 @@ namespace nboni.CodeGen
             return txt.Trim(trim);
         }
 
+        public static string TableColumns2(Dictionary<string, string> fields)
+        {
+            string txt = "";
+            foreach (KeyValuePair<string, string> field in fields)
+            {
+                txt = txt + Environment.NewLine + "<td><span v-html='item." + FirstToLower(field.Key) + "'></span></td>";
+            } 
+            char[] trim = new char[1] { ',' };
+            return txt.Trim(trim);
+        }
+
+
         public static string TableColumns(Dictionary<string, string> fields)
         {
             string txt = "";
             foreach (KeyValuePair<string, string> field in fields)
             {
                 txt = txt + Environment.NewLine + "{'data': '" + FirstToLower(field.Key) + "' },";
-            }
-            txt = txt + Environment.NewLine + "{'data': 'recordStatus' },";
-            txt = txt + Environment.NewLine + "{'data': 'createdAt' },";
-            txt = txt + Environment.NewLine + "{'data': 'updatedAt' },";
+            } 
             char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }
 
         public static string TableHeader(Dictionary<string, string> fields)
         {
-            string temp1 = " <th>%K%</th> ";
+            string temp1 = " <th>%K%</th> "; 
+            string txt = "";
+            foreach (KeyValuePair<string, string> field2 in fields)
+            {
+                txt += getHeader(field2.Key, temp1);
+            } 
+            char[] trim = new char[1] { ',' };
+            return txt.Trim(trim);
+        }
+
+
+        public static string TableHeader2(Dictionary<string, string> fields)
+        {
+            string temp1 = " <th><span class='sortz' data-qs='%k%'>%K%</span></th> "; 
             string txt = "";
             foreach (KeyValuePair<string, string> field2 in fields)
             {
                 txt += getHeader(field2.Key, temp1);
             }
-            txt += getHeader("Status", temp1);
-            txt += getHeader("Created", temp1);
-            txt += getHeader("Updated", temp1);
             char[] trim = new char[1] { ',' };
             return txt.Trim(trim);
         }

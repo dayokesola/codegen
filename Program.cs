@@ -40,6 +40,9 @@ namespace nboni.CodeGen
                 case "-r":
                     RunREST();
                     break;
+                default:
+                    RunHelp();
+                    break;
             }
 
         }

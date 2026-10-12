@@ -125,6 +125,8 @@ namespace nboni.CodeGen
             txt = txt.Replace("%U%", Stringer.UpperVariables(fields));
             txt = txt.Replace("%M%", Stringer.ModelVariables(fields));
             txt = txt.Replace("%Q%", Stringer.QueryString(fields));
+            txt = txt.Replace("%TC%", Stringer.TableColumns(fields));
+            txt = txt.Replace("%TC-2%", Stringer.TableColumns2(fields));
             txt = txt.Replace("%F%", Stringer.Queryable(fields));
             txt = txt.Replace("%F1%", Stringer.QueryableView(fields, formats));
             txt = txt.Replace("%FG%", Stringer.FactorMapper(fields));
@@ -135,12 +137,12 @@ namespace nboni.CodeGen
             txt = txt.Replace("%C2%", Stringer.Properties(fields, 2));
             txt = txt.Replace("%C3%", Stringer.Properties(fields, 3));
             txt = txt.Replace("%JM%", Stringer.JSModel(fields, idtype));
-            txt = txt.Replace("%TC%", Stringer.TableColumns(fields));
             txt = txt.Replace("%J%", Stringer.JObjectHelper(fields));
             txt = txt.Replace("%B%", Stringer.ViewBag(fields));
             txt = txt.Replace("%D%", Stringer.Document(fields));
             txt = txt.Replace("%G%", Stringer.Paginator(fields));
             txt = txt.Replace("%TR%", Stringer.TableHeader(fields));
+            txt = txt.Replace("%TR-2%", Stringer.TableHeader2(fields));
             txt = txt.Replace("%TD%", Stringer.TableRow(fields));
             txt = txt.Replace("%MM1%", Stringer.MigrationMapper(fields));
             txt = txt.Replace("%MM2%", Stringer.MigrationMapper(fields));
